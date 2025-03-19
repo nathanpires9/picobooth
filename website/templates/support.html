@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}PicoBooth | Support{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Support PicoBooth</h1>
+
+    <div class="content-section">
+        <h2>Why Support Us?</h2>
+        <p>PicoBooth is an entirely free photo booth service created to bring fun and excitement to events and parties. The platform is constantly being improved with new features, stickers, and enhancements. However, as with any project, it takes time, resources, and effort to keep everything running smoothly.</p>
+        <p>Your generous donation will help us maintain and improve PicoBooth, allowing us to continue providing a fun, free experience to people all over the world. Every little bit helps!</p>
+    </div>
+
+    <div class="content-section">
+        <h2>How You Can Help</h2>
+        <p>We understand that not everyone can contribute financially, and that's okay! However, if you do feel inclined to donate, your support can help fund the development of the platform and ensure its growth. Here's how you can help:</p>
+        <ul>
+            <li><strong>One-Time Donation:</strong> A single donation to help fund immediate improvements and updates.</li>
+            <li><strong>Monthly Contribution:</strong> A monthly donation to help support ongoing development costs.</li>
+            <li><strong>Spread the Word:</strong> Share PicoBooth with your friends and family, and tell others about our platform!</li>
+        </ul>
+    </div>
+
+    <div class="content-section text-center">
+        <h2>Donate to Support PicoBooth</h2>
+        <p>Your contribution, no matter the amount, will go a long way in helping us improve and expand PicoBooth.</p>
+
+        <!-- Example: Add donation button for PayPal (you can replace this with your PayPal account details) -->
+        <form action="https://www.paypal.com/donate" method="post" target="_blank">
+            <input type="hidden" name="business" value="your-paypal-email@example.com">
+            <input type="hidden" name="item_name" value="PicoBooth Donation">
+            <input type="hidden" name="currency_code" value="USD">
+            <input type="submit" class="btn btn-primary btn-lg" value="Donate Now">
+        </form>
+    </div>
+
+    <div class="content-section text-center">
+        <a href="/" class="btn btn-primary btn-lg">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Custom CSS for Support Page -->
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #B0E0E6; /* Light Blue */
+        color: #123524; /* Dark Green */
+    }
+
+    h1 {
+        font-family: 'Chewy', cursive;
+        color: #123524; /* Dark Green */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .content-section {
+        margin-bottom: 40px;
+    }
+
+    .content-section h2 {
+        color: #F6B8B8; /* Main Pink */
+    }
+
+    .btn-primary {
+        background-color: #F6B8B8; /* Main Pink */
+        border-color: #F6B8B8;
+    }
+
+    .btn-primary:hover {
+        background-color: #ff1493; /* Darker Pink */
+        border-color: #ff1493;
+    }
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    ul li {
+        margin-bottom: 10px;
+    }
+
+    ul li strong {
+        color: #F6B8B8; /* Main Pink */
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 20px;
+        background-color: #F6B8B8; /* Main Pink */
+        color: #fff;
+        font-family: 'Chewy', cursive;
+    }
+</style>

@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+
+{% block title %}Photo Booth{% endblock %}
+
+{% block content %}
+<div class="photo-booth">
+    <h1>PicoBooth</h1>
+    <p>Capture your fun moments and create a DIY photo strip!</p>
+
+    <!-- Photo Options -->
+    <div class="photo-options">
+        <label>Number of Photos:</label>
+        <div class="custom-dropdown">
+            <div class="selected-option">Select</div>
+            <ul class="dropdown-options">
+                <li data-value="1">1 (Large Photo)</li>
+                <li data-value="3">3</li>
+                <li data-value="4">4</li>
+                <li data-value="5">5</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- All Photos Captured Message -->
+    <div id="all-photos-captured" class="all-photos-captured">
+        <span id="all-photos-text"></span>
+    </div>
+
+    <!-- Photo Capture Area -->
+    <div class="camera-container">
+        <video id="video" autoplay></video>
+        <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+        <div id="countdown" class="countdown">
+            <span id="countdown-text"></span>
+        </div>
+    </div>
+
+    <!-- Strip Preview -->
+    <div id="strip-preview" class="strip-preview">
+        <canvas id="strip-canvas" width="200" height="640"></canvas>
+    </div>
+
+    <!-- Capture and Save Buttons -->
+    <div class="controls">
+        <button id="capture-btn" class="btn btn-primary">Capture Photo</button>
+        <button id="save-btn" class="btn btn-primary">Save as PNG Strip</button>
+    </div>
+
+    <!-- Sticker Panel -->
+    <div class="sticker-panel">
+        <h3>Add Stickers</h3>
+        <div class="stickers">
+            <img src="{{ url_for('static', filename='sticker1.png') }}" alt="Sticker 1" class="sticker" data-sticker="sticker1">
+            <img src="{{ url_for('static', filename='sticker2.png') }}" alt="Sticker 2" class="sticker" data-sticker="sticker2">
+            <img src="{{ url_for('static', filename='sticker3.png') }}" alt="Sticker 3" class="sticker" data-sticker="sticker3">
+            <!-- Add more stickers as needed -->
+        </div>
+    </div>
+
+    <!-- Color Strip Options -->
+    <div class="color-strip-options">
+        <h3>Choose Strip Color</h3>
+        <div class="colors">
+            <div class="color-option" data-color="#ff69b4" style="background-color: #ff69b4;"></div> <!-- Bubble Gum Pink -->
+            <div class="color-option" data-color="#77dd77" style="background-color: #77dd77;"></div> <!-- Pastel Green -->
+            <div class="color-option" data-color="#87ceeb" style="background-color: #87ceeb;"></div> <!-- Sky Blue -->
+            <div class="color-option" data-color="#ffd700" style="background-color: #ffd700;"></div> <!-- Gold -->
+            <div class="color-option" data-color="#ffffff" style="background-color: #ffffff; border: 1px solid #000;"></div> <!-- White -->
+        </div>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-panel">
+            <p id="popup-message"></p>
+            <div class="popup-buttons">
+                <button id="start-btn" class="btn btn-primary">Start</button>
+                <button id="more-time-btn" class="btn btn-secondary">Need More Time</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for Photo Booth Page -->
+<style>
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+        width: 200px;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .selected-option {
+        padding: 12px;
+        border: 2px solid #ff69b4;
+        border-radius: 10px;
+        background-color: #fff;
+        color: #333;
+        cursor: pointer;
+        text-align: center;
+        transition: 0.3s;
+    }
+
+    .selected-option:hover {
+        border-color: #ff1493;
+    }
+
+    .dropdown-options {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: none;
+        position: absolute;
+        width: 100%;
+        background-color: white;
+        border: 2px solid #ff69b4;
+        border-radius: 10px;
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    .dropdown-options li {
+        padding: 10px;
+        cursor: pointer;
+        text-align: center;
+        transition: 0.2s;
+    }
+
+    .dropdown-options li:hover {
+        background-color: #ff69b4;
+        color: white;
+    }
+
+    .photo-booth {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .photo-options {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .photo-options label {
+        font-size: 18px;
+        font-family: 'Poppins', sans-serif;
+        color: #333;
+    }
+
+    .camera-container {
+        margin: 0 auto 20px auto;
+        position: relative;
+        max-width: 640px;
+        width: 100%;
+    }
+
+    #video {
+        border: 5px solid #ff69b4; /* Bubble Gum Pink */
+        border-radius: 10px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        background-color: #000; /* Black background for video feed */
+    }
+
+    .countdown {
+        margin-top: 10px;
+        font-size: 32px; /* Larger text */
+        font-family: 'Chewy', cursive;
+        color: #ff69b4; /* Bubble Gum Pink */
+        text-align: center;
+    }
+
+    .controls {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: #ff69b4; /* Bubble Gum Pink */
+        border-color: #ff69b4;
+        color: #fff;
+        font-size: 18px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #ff1493; /* Darker Pink */
+        border-color: #ff1493;
+    }
+
+    .all-photos-captured {
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-family: 'Chewy', cursive;
+        color: #77dd77; /* Pastel Green */
+        display: none; /* Hidden by default */
+        text-align: center;
+    }
+
+    .strip-preview {
+        margin-top: 20px;
+        display: none; /* Hidden by default */
+        text-align: center;
+    }
+
+    #strip-canvas {
+        border: 5px solid #ff69b4; /* Bubble Gum Pink */
+        border-radius: 10px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .sticker-panel {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .sticker-panel h3 {
+        font-family: 'Chewy', cursive;
+        color: #77dd77; /* Pastel Green */
+        margin-bottom: 10px;
+    }
+
+    .stickers {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .stickers img {
+        width: 50px;
+        height: 50px;
+        margin: 5px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .stickers img:hover {
+        transform: scale(1.2);
+    }
+
+    .color-strip-options {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .color-strip-options h3 {
+        font-family: 'Chewy', cursive;
+        color: #77dd77; /* Pastel Green */
+        margin-bottom: 10px;
+    }
+
+    .colors {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .color-option {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .color-option:hover {
+        transform: scale(1.1);
+        border-color: #000;
+    }
+
+    .color-option.selected {
+        border-color: #000;
+    }
+
+    /* Popup Overlay */
+    .popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .popup-panel {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        background-color: #ff69b4; /* Bubble Gum Pink */
+        color: #fff;
+    }
+
+    .popup-panel p {
+        font-size: 20px;
+        font-family: 'Chewy', cursive;
+        margin: 0 0 20px 0;
+    }
+
+    .popup-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        background-color: #77dd77; /* Pastel Green */
+        border-color: #77dd77;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5cb85c; /* Darker Green */
+        border-color: #5cb85c;
+    }
+</style>
+
+<!-- JavaScript for Camera Initialization -->
+<script>
+    const video = document.getElementById('video');
+
+    // Access the camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            video.srcObject = stream;
+        })
+        .catch((err) => {
+            console.error("Error accessing the camera: ", err);
+            alert("Unable to access the camera. Please ensure your camera is connected and permissions are granted.");
+        });
+</script>
+
+<!-- JavaScript for Dropdown Functionality -->
+<script>
+    const dropdown = document.querySelector('.custom-dropdown');
+    const selectedOption = dropdown.querySelector('.selected-option');
+    const dropdownOptions = dropdown.querySelector('.dropdown-options');
+    let selectedValue = 1; // Default value
+
+    // Toggle dropdown visibility
+    selectedOption.addEventListener('click', () => {
+        dropdownOptions.style.display = dropdownOptions.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Handle option selection
+    dropdownOptions.querySelectorAll('li').forEach(option => {
+        option.addEventListener('click', () => {
+            selectedOption.textContent = option.textContent; // Update selected option text
+            selectedValue = option.getAttribute('data-value'); // Update selected value
+            dropdownOptions.style.display = 'none'; // Hide dropdown
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!dropdown.contains(event.target)) {
+            dropdownOptions.style.display = 'none';
+        }
+    });
+</script>
+<!-- JavaScript for Photo Booth Functionality -->
+<script>
+    const canvas = document.getElementById('canvas');
+    const stripCanvas = document.getElementById('strip-canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const ctx = canvas.getContext('2d');
+    const stripCtx = stripCanvas.getContext('2d');
+    const colorOptions = document.querySelectorAll('.color-option');
+    const countdownText = document.getElementById('countdown-text');
+    const popupOverlay = document.getElementById('popup-overlay');
+    const popupMessage = document.getElementById('popup-message');
+    const allPhotosText = document.getElementById('all-photos-text');
+    const allPhotosCaptured = document.getElementById('all-photos-captured');
+    const stripPreview = document.getElementById('strip-preview');
+    const startBtn = document.getElementById('start-btn');
+    const moreTimeBtn = document.getElementById('more-time-btn');
+
+    let photos = []; // Array to store captured photos
+    let selectedColor = '#ff69b4'; // Default strip color
+    let isCapturing = false; // To prevent multiple captures at once
+
+    // Show popup with options
+    function showPopup(message) {
+        popupMessage.textContent = message;
+        popupOverlay.style.display = 'flex';
+    }
+
+    // Hide popup
+    function hidePopup() {
+        popupOverlay.style.display = 'none';
+    }
+
+    // Start capturing photos
+    startBtn.addEventListener('click', () => {
+        hidePopup();
+        startCountdown(parseInt(selectedValue)); // Use the selected value from the dropdown
+    });
+
+    // Give more time
+    moreTimeBtn.addEventListener('click', () => {
+        hidePopup();
+    });
+
+    // Capture photo with countdown
+    captureBtn.addEventListener('click', () => {
+        if (isCapturing) return; // Prevent multiple clicks
+        const photoCount = parseInt(selectedValue); // Use the selected value from the dropdown
+        if (photos.length === 0) {
+            showPopup("✨ No redos! Look fab and strike a pose! ✨");
+        } else {
+            startCountdown(photoCount);
+        }
+    });
+
+    // Start countdown and capture photos
+    function startCountdown(photoCount) {
+        isCapturing = true;
+        let count = 3; // Countdown from 3
+        const countdownInterval = setInterval(() => {
+            countdownText.textContent = count;
+            if (count === 0) {
+                clearInterval(countdownInterval);
+                countdownText.textContent = "Cheese! 🧀";
+                setTimeout(() => {
+                    capturePhoto();
+                    if (photos.length < photoCount) {
+                        startCountdown(photoCount); // Continue countdown for next photo
+                    } else {
+                        countdownText.textContent = "";
+                        allPhotosText.textContent = "All photos captured! 🎉";
+                        allPhotosCaptured.style.display = "block";
+                        generateStripPreview();
+                        stripPreview.style.display = "block";
+                        video.style.display = "none"; // Hide the live camera feed
+                        isCapturing = false;
+                    }
+                }, 500); // Delay to allow "Cheese!" to display
+            }
+            count--;
+        }, 1000); // 1-second intervals
+    }
+
+    // Capture a single photo
+    function capturePhoto() {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/png');
+        photos.push(imageData);
+    }
+
+    // Generate vertical strip preview
+    function generateStripPreview() {
+        const photoWidth = 200; // Width of each photo in the strip
+        const photoHeight = 150; // Height of each photo in the strip
+        const spacing = 10; // Spacing between photos
+        const stripPadding = 20; // Padding around the strip
+
+        // Calculate strip dimensions
+        const stripHeight = (photoHeight + spacing) * photos.length - spacing + stripPadding * 2;
+        stripCanvas.width = photoWidth + stripPadding * 2;
+        stripCanvas.height = stripHeight;
+
+        // Draw the selected color as the background
+        stripCtx.fillStyle = selectedColor;
+        stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+        // Draw each photo on the strip
+        photos.forEach((photo, index) => {
+            const img = new Image();
+            img.src = photo;
+            img.onload = () => {
+                stripCtx.drawImage(img, stripPadding, stripPadding + (photoHeight + spacing) * index, photoWidth, photoHeight);
+            };
+        });
+    }
+
+    // Save as PNG strip
+    saveBtn.addEventListener('click', () => {
+        if (photos.length === 0) {
+            showPopup('No photos captured yet!');
+            return;
+        }
+
+        const link = document.createElement('a');
+        link.download = 'photo-strip.png';
+        link.href = stripCanvas.toDataURL();
+        link.click();
+    });
+
+    // Add stickers to the canvas
+    const stickers = document.querySelectorAll('.sticker');
+    stickers.forEach(sticker => {
+        sticker.addEventListener('click', () => {
+            const img = new Image();
+            img.src = sticker.src;
+            img.onload = () => {
+                ctx.drawImage(img, 50, 50, 100, 100); // Adjust position and size as needed
+            };
+        });
+    });
+
+    // Select strip color
+    colorOptions.forEach(color => {
+        color.addEventListener('click', () => {
+            colorOptions.forEach(c => c.classList.remove('selected'));
+            color.classList.add('selected');
+            selectedColor = color.getAttribute('data-color');
+            if (photos.length > 0) {
+                generateStripPreview();
+            }
+        });
+    });
+</script>
+{% endblock %}

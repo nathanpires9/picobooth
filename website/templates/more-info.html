@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}PicoBooth | More Info{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>More Information</h1>
+
+    <div class="content-section">
+        <h2>What is PicoBooth?</h2>
+        <p>PicoBooth is a fun and customizable online photo booth that allows you to capture moments with various fun stickers, backgrounds, and filters! It’s perfect for any event, whether it’s a wedding, party, or just for fun!</p>
+    </div>
+
+    <div class="content-section">
+        <h2>How to Use PicoBooth</h2>
+        <p>Simply visit our site, take a photo, customize it by adding stickers and effects, and then save or share your personalized photo strip. It's easy, fun, and completely free!</p>
+    </div>
+
+    <div class="content-section">
+        <h2>Features</h2>
+        <ul>
+            <li>Instant photo capture with a built-in camera feature.</li>
+            <li>Choose from a variety of stickers and effects.</li>
+            <li>Download or share your photos instantly.</li>
+            <li>Customizable photo strip layout.</li>
+            <li>Easy-to-use interface for all ages.</li>
+        </ul>
+    </div>
+
+    <div class="content-section">
+        <h2>Support</h2>
+        <p>If you need help or have any questions, feel free to visit our <a href="/sign-up">Support Page</a>. Our team is ready to assist you.</p>
+    </div>
+
+    <div class="content-section text-center">
+        <a href="/" class="btn btn-primary btn-lg">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Custom CSS for More Info Page -->
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #B0E0E6; /* Light Blue */
+        color: #123524; /* Dark Green */
+    }
+
+    h1 {
+        font-family: 'Chewy', cursive;
+        color: #123524; /* Dark Green */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .content-section {
+        margin-bottom: 40px;
+    }
+
+    .content-section h2 {
+        color: #F6B8B8; /* Main Pink */
+    }
+
+    .btn-primary {
+        background-color: #F6B8B8; /* Main Pink */
+        border-color: #F6B8B8;
+    }
+
+    .btn-primary:hover {
+        background-color: #ff1493; /* Darker Pink */
+        border-color: #ff1493;
+    }
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    ul li {
+        margin-bottom: 10px;
+    }
+
+    ul li strong {
+        color: #F6B8B8; /* Main Pink */
+    }
+
+    a {
+        color: #F6B8B8; /* Main Pink */
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #ff1493; /* Darker Pink */
+        text-decoration: underline;
+    }
+
+    .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 20px;
+        background-color: #F6B8B8; /* Main Pink */
+        color: #fff;
+        font-family: 'Chewy', cursive;
+    }
+</style>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <title>PicoBooth</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+        crossorigin="anonymous"
+    />
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+        crossorigin="anonymous"
+    />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Chewy&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #B0E0E6; /* Light Blue */
+            color: #123524; /* Dark Green */
+        }
+        .navbar {
+            background-color: #F6B8B8 !important; /* Main Pink */
+        }
+        .navbar-brand {
+            color: #123524 !important; /* Dark Green for text */
+            font-family: 'Chewy', cursive;
+            font-size: 24px;
+        }
+        .nav-item a {
+            color: #123524 !important; /* Dark Green for menu items */
+            font-size: 18px;
+        }
+        .nav-item a:hover {
+            color: #F6B8B8 !important; /* Pink on hover */
+        }
+        .container {
+            margin-top: 20px;
+        }
+        h1 {
+            font-family: 'Chewy', cursive;
+            color: #123524; /* Dark Green */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #F6B8B8; /* Main Pink */
+            border-color: #F6B8B8;
+        }
+        .btn-primary:hover {
+            background-color: #ff1493; /* Darker Pink */
+            border-color: #ff1493;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #F6B8B8; /* Main Pink */
+            color: #fff;
+            font-family: 'Chewy', cursive;
+        }
+        .logo {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+    <title>{% block title %}Home{% endblock %}</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="/">PicoBooth</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+            <div class="navbar-nav ml-auto">
+                <a class="nav-item nav-link" id="Home Page" href="/">Home</a>
+                <a class="nav-item nav-link" id="More Info" href="/more-info">More Info</a>
+                <a class="nav-item nav-link" id="Support" href="/support">Support</a>
+                <a class="nav-item nav-link" id="Requests" href="/requests">Requests</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 PicoBooth. All rights reserved. | DIY Photo Booth Fun!</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"
+    ></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"
+    ></script>
+    <script
+        src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"
+    ></script>
+</body>
+</html>
