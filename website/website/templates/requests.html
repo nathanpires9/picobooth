@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}PicoBooth | Feature Request{% endblock %}
+
+{% block content %}
+<div class="container feature-request-container">
+    <h1>✨ Your Ideas, Our Inspiration ✨</h1>
+    <p class="subtitle">Help shape the future of PicoBooth with your creative suggestions!</p>
+
+    <div class="feature-hero">
+        <div class="hero-illustration">💡🎨📸</div>
+        <div class="hero-text">
+            <h2>We <span class="heart">💖</span> Your Creativity!</h2>
+            <p>At PicoBooth, every great feature started as someone's idea. What would you love to see in our photo booth? A fun new sticker? A magical filter? Share your vision with us!</p>
+        </div>
+    </div>
+
+    <div class="request-card">
+        <div class="card-header">
+            <h2><span class="icon">✏️</span> Suggest Your Idea</h2>
+            <div class="decoration">🌟</div>
+        </div>
+        
+        <form action="/submit-request" method="POST" class="request-form">
+            <div class="form-group">
+                <label for="name">
+                    <span class="label-icon">👤</span> Your Name
+                </label>
+                <input type="text" id="name" name="name" required 
+                       placeholder="How should we call you?">
+                <div class="input-decoration">🌸</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    <span class="label-icon">📧</span> Your Email
+                </label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="Where can we reach you?">
+                <div class="input-decoration">🌼</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="request-type">
+                    <span class="label-icon">🏷️</span> What Are You Suggesting?
+                </label>
+                <div class="select-wrapper">
+                    <select id="request-type" name="request_type">
+                        <option value="Feature">🌟 Feature Request</option>
+                        <option value="Sticker">🎀 Sticker Suggestion</option>
+                        <option value="Color">🌈 Color Theme</option>
+                        <option value="Filter">🪄 Magic Filter</option>
+                        <option value="Other">💭 Other Idea</option>
+                    </select>
+                    <div class="select-arrow">▼</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="request-description">
+                    <span class="label-icon">📝</span> Describe Your Idea
+                </label>
+                <textarea id="request-description" name="description" rows="5" required
+                          placeholder="Tell us all about your amazing idea..."></textarea>
+                <div class="textarea-decoration">✨</div>
+            </div>
+            
+            <div class="form-footer">
+                <button type="submit" class="submit-btn">
+                    🚀 Launch Your Idea!
+                </button>
+                <div class="form-note">We review every suggestion with 💖</div>
+            </div>
+        </form>
+    </div>
+
+    <div class="inspiration-section">
+        <h2><span class="icon">💫</span> Recently Added Features</h2>
+        <p>These popular features started as user suggestions just like yours!</p>
+        
+        <div class="feature-showcase">
+            <div class="feature-item">
+                <div class="feature-badge">NEW!</div>
+                <div class="feature-icon">🦄</div>
+                <h3>Unicorn Filter</h3>
+                <p>Suggested by Emma from Portland</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🎭</div>
+                <h3>Masquerade Stickers</h3>
+                <p>Suggested by Carlos from Madrid</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🌌</div>
+                <h3>Galaxy Backgrounds</h3>
+                <p>Suggested by Aisha from Dubai</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <a href="/" class="home-btn">
+            🏡 Back to PicoBooth Fun
+        </a>
+    </div>
+</div>
+
+<style>
+    /* Base Styles */
+    .feature-request-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    h1 {
+        font-family: 'Chewy', cursive;
+        color: #FF6B9D;
+        text-align: center;
+        font-size: 2.8rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+    }
+
+    .subtitle {
+        text-align: center;
+        color: #5E2E53;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    h2 {
+        font-family: 'Chewy', cursive;
+        color: #FF6B9D;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Hero Section */
+    .feature-hero {
+        background: linear-gradient(135deg, #FFE6EE 0%, #FFC0D9 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 8px 20px rgba(255,107,157,0.15);
+    }
+
+    .hero-text {
+        flex: 1;
+    }
+
+    .hero-text p {
+        font-size: 1.1rem;
+        color: #5E2E53;
+    }
+
+    .hero-illustration {
+        font-size: 3rem;
+        margin-left: 2rem;
+    }
+
+    .heart {
+        animation: heartbeat 1.5s infinite;
+        display: inline-block;
+    }
+
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.1); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Request Card */
+    .request-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .decoration {
+        font-size: 2rem;
+        opacity: 0.2;
+    }
+
+    /* Form Styles */
+    .request-form {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: bold;
+        color: #5E2E53;
+        margin-bottom: 0.5rem;
+    }
+
+    .label-icon {
+        font-size: 1.2rem;
+    }
+
+    input, textarea, select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #FFE6EE;
+        border-radius: 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #FFF9FA;
+    }
+
+    input:focus, textarea:focus, select:focus {
+        border-color: #FF6B9D;
+        box-shadow: 0 0 0 3px rgba(255,107,157,0.2);
+        outline: none;
+        background: white;
+    }
+
+    input::placeholder, textarea::placeholder {
+        color: #CAA5B8;
+        opacity: 1;
+    }
+
+    .input-decoration, .textarea-decoration {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        font-size: 1.2rem;
+        opacity: 0.3;
+    }
+
+    .textarea-decoration {
+        bottom: 20px;
+    }
+
+    /* Select Styling */
+    .select-wrapper {
+        position: relative;
+    }
+
+    select {
+        appearance: none;
+        padding-right: 2.5rem;
+    }
+
+    .select-arrow {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #FF6B9D;
+    }
+
+    /* Submit Button */
+    .form-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #FF6B9D 0%, #FF3D7F 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(255,107,157,0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(255,107,157,0.4);
+    }
+
+    .form-note {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #9D7A8F;
+    }
+
+    /* Inspiration Section */
+    .inspiration-section {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .inspiration-section p {
+        color: #5E2E53;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-showcase {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .feature-item {
+        background: #FFF5F7;
+        border-radius: 15px;
+        padding: 1.5rem;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-badge {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background: #FF6B9D;
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-item h3 {
+        color: #FF6B9D;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-item p {
+        font-size: 0.9rem;
+        color: #9D7A8F;
+    }
+
+    /* CTA Button */
+    .cta-section {
+        text-align: center;
+    }
+
+    .home-btn {
+        background: #FF6B9D;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(255,107,157,0.3);
+        transition: all 0.3s ease;
+    }
+
+    .home-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255,107,157,0.4);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .feature-hero {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .hero-illustration {
+            margin: 1rem 0 0 0;
+            order: -1;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+        }
+    }
+</style>
+{% endblock %}
