@@ -1,0 +1,858 @@
+{% extends "base.html" %}
+
+{% block title %}Home - PicoBooth{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <div class="hero-section" id="hero-section">
+        <!-- Floating Emoji Background -->
+        <div class="emoji-background">
+            📸✨🎉🤳🌈🎨🦄
+        </div>
+        
+        <!-- Welcome Content -->
+        <div class="hero-content">
+            <div class="welcome-text">
+                <h1>Welcome to <span class="logo-text">PicoBooth</span>!</h1>
+                <p class="tagline">Where every moment becomes a <span class="highlight">playful memory</span> ✨</p>
+            </div>
+
+            <!-- Animated Logo -->
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="PicoBooth Logo" class="logo">
+                </div>
+            </div>
+            
+            <p class="hero-description">Capture fun moments with magical stickers, dreamy filters, and create your own photo strips. Perfect for parties, events, or just because!</p>
+            <a href="/photo-booth" class="btn-modern start-button">
+                🎀 Start Creating Magic 🎀
+                <span class="btn-sparkle">✨</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features-section">
+        <h3 class="section-title">Why Everyone 💖 PicoBooth</h3>
+        <div class="features-container">
+            <div class="feature" data-animation="fadeInUp">
+                <div class="feature-icon">📸</div>
+                <h4>Instant Magic</h4>
+                <p>Snap high-quality photos with our enchanted camera that works like a charm!</p>
+                <div class="feature-emoji">⚡</div>
+            </div>
+            <div class="feature popular" data-animation="fadeInUp" data-delay="0.2s">
+                <div class="feature-icon">🎨</div>
+                <h4>500+ Custom Stickers</h4>
+                <p>Each sticker is hand-drawn by our talented artists - unicorns, silly hats, and more!</p>
+                <div class="feature-emoji">🦄</div>
+                <div class="popular-badge">Fan Favorite!</div>
+            </div>
+            <div class="feature" data-animation="fadeInUp" data-delay="0.4s">
+                <div class="feature-icon">🌈</div>
+                <h4>Dreamy Filters</h4>
+                <p>From vintage vibes to fairy tale glow, make every photo magical!</p>
+                <div class="feature-emoji">🧚</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="testimonials-section">
+        <h3 class="section-title">What Our Wizards Say 🧙✨</h3>
+        <div class="testimonials-container">
+            <div class="testimonial" data-animation="fadeInLeft">
+                <div class="testimonial-content">
+                    "Used PicoBooth for my birthday party and it was a HIT! The rainbow filter made everyone look magical ✨"
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-emoji">🎂</div>
+                    <div class="author-name">Sarah, 28</div>
+                </div>
+            </div>
+            <div class="testimonial" data-animation="fadeInRight">
+                <div class="testimonial-content">
+                    "My students love making class memories with the silly sticker collection. Best free photo booth ever!"
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-emoji">🍎</div>
+                    <div class="author-name">Mr. Thompson</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Showcase -->
+    <div class="showcase-section">
+        <h3 class="section-title">Recent Creations 🌟</h3>
+        <div class="photo-strip" data-animation="slideIn">
+            <div class="photo" style="background-image: url('https://source.unsplash.com/random/300x400/?smile')"></div>
+            <div class="photo" style="background-image: url('https://source.unsplash.com/random/300x400/?party')"></div>
+            <div class="photo" style="background-image: url('https://source.unsplash.com/random/300x400/?friends')"></div>
+            <div class="photo" style="background-image: url('https://source.unsplash.com/random/300x400/?fun')"></div>
+        </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="final-cta" id="final-cta">
+        <h3 data-animation="bounceIn">Ready to Create Some Magic?</h3>
+        <div class="cta-emoji">👇✨👇</div>
+        <a href="/photo-booth" class="btn-modern btn-large start-button">
+            🎪 Start Your Photo Adventure Now!
+        </a>
+    </div>
+
+    <!-- Floating Start Button -->
+    <div class="floating-start-btn-container" id="floating-btn">
+        <a href="/photo-booth" class="floating-start-btn start-button">
+            <span class="btn-emoji">📸</span>
+            <span class="btn-text">Start PicoBooth</span>
+            <div class="btn-sparkle-container">
+                <span class="sparkle">✨</span>
+                <span class="sparkle">✨</span>
+                <span class="sparkle">✨</span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Custom CSS -->
+    <style>
+        /* Base Styles */
+        :root {
+            --pink: #FF6B9D;
+            --pink-light: #FFC0D9;
+            --pink-lighter: #FFE6EE;
+            --purple: #9D7A8F;
+            --purple-dark: #5E2E53;
+            --green: #77DD77;
+            --yellow: #FFD166;
+            --blue: #118AB2;
+            --teal: #06D6A0;
+            --red: #EF476F;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: #333;
+        }
+
+        /* Animation Classes */
+        [data-animation] {
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        [data-animation="fadeInUp"] {
+            transform: translateY(50px);
+        }
+
+        [data-animation="fadeInLeft"] {
+            transform: translateX(-50px);
+        }
+
+        [data-animation="fadeInRight"] {
+            transform: translateX(50px);
+        }
+
+        [data-animation="slideIn"] {
+            transform: translateX(100%);
+        }
+
+        [data-animation="bounceIn"] {
+            transform: scale(0.8);
+        }
+
+        .animate {
+            opacity: 1 !important;
+            transform: translate(0) scale(1) !important;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, var(--pink-light) 0%, var(--pink-lighter) 100%);
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.2);
+            margin: 2rem auto;
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+        }
+
+        .emoji-background {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: float 15s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px) rotate(0deg); }
+            100% { transform: translateX(calc(100vw + 100px)) rotate(360deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Welcome Text */
+        .welcome-text h1 {
+            font-family: 'Chewy', cursive;
+            color: var(--purple-dark);
+            margin-bottom: 0.5rem;
+            font-size: 3.5rem;
+            animation: bounce 2s ease infinite;
+        }
+
+        .logo-text {
+            color: var(--pink);
+            text-shadow: 3px 3px 0 var(--pink-light);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: var(--purple);
+            margin-bottom: 2rem;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .highlight {
+            background: linear-gradient(transparent 60%, rgba(255, 214, 107, 0.4) 40%);
+        }
+
+        /* Logo */
+        .logo-container {
+            margin: 2rem 0;
+        }
+
+        .logo-circle {
+            display: inline-block;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s ease infinite;
+        }
+
+        .logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: rotate(10deg) scale(1.05);
+        }
+
+        /* Hero Description */
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--purple-dark);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Modern Button */
+        .btn-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--pink) 0%, #FF3D7F 100%);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.2rem;
+            font-family: 'Chewy', cursive;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        .btn-modern:active {
+            transform: translateY(1px);
+        }
+
+        .btn-sparkle {
+            animation: sparkle 2s ease infinite;
+        }
+
+        .btn-large {
+            padding: 1.5rem 3rem;
+            font-size: 1.5rem;
+        }
+
+        /* Features Section */
+        .features-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Chewy', cursive;
+            color: var(--purple-dark);
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .features-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        /* Feature Cards */
+        .feature {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            flex: 1;
+            min-width: 280px;
+            max-width: 320px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .feature:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature.popular {
+            border: 3px solid var(--pink);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: var(--pink);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transform: rotate(10deg);
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover .feature-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .feature h4 {
+            font-family: 'Chewy', cursive;
+            color: var(--purple-dark);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature p {
+            font-size: 1.1rem;
+            color: var(--purple);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-emoji {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            background: linear-gradient(135deg, #FFF5F7 0%, #FFE6EE 100%);
+            padding: 4rem 2rem;
+            margin: 3rem 0;
+            border-radius: 30px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .testimonials-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .testimonial-content {
+            font-size: 1.1rem;
+            font-style: italic;
+            color: var(--purple-dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-emoji {
+            font-size: 1.5rem;
+        }
+
+        .author-name {
+            font-weight: bold;
+            color: var(--pink);
+        }
+
+        /* Photo Showcase */
+        .showcase-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .photo-strip {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding: 1rem 0;
+        }
+
+        .photo {
+            width: 200px;
+            height: 300px;
+            border-radius: 15px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s ease;
+        }
+
+        .photo:hover {
+            transform: scale(1.1) rotate(3deg);
+            z-index: 10;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            text-align: center;
+            padding: 3rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .final-cta h3 {
+            font-family: 'Chewy', cursive;
+            color: var(--purple-dark);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-emoji {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s ease infinite;
+        }
+
+        /* Floating Button Styles */
+        .floating-start-btn-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .floating-start-btn-container.hidden {
+            opacity: 0;
+            transform: translateY(100px);
+            pointer-events: none;
+        }
+
+        .floating-start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--pink) 0%, #FF3D7F 100%);
+            color: white;
+            padding: 16px 24px;
+            font-family: 'Chewy', cursive;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .floating-start-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 107, 157, 0.6);
+        }
+
+        .floating-start-btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-emoji {
+            font-size: 1.6rem;
+            transition: all 0.3s ease;
+        }
+
+        .floating-start-btn:hover .btn-emoji {
+            transform: rotate(15deg) scale(1.2);
+        }
+
+        .btn-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-sparkle-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 1rem;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .sparkle:nth-child(1) {
+            top: 10px;
+            left: 15px;
+        }
+
+        .sparkle:nth-child(2) {
+            bottom: 10px;
+            right: 15px;
+        }
+
+        .sparkle:nth-child(3) {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .floating-start-btn:hover .sparkle {
+            opacity: 1;
+        }
+
+        .floating-start-btn:hover .sparkle:nth-child(1) {
+            animation: sparkleFloat 2s ease infinite;
+        }
+
+        .floating-start-btn:hover .sparkle:nth-child(2) {
+            animation: sparkleFloat 2s ease infinite 0.3s;
+        }
+
+        .floating-start-btn:hover .sparkle:nth-child(3) {
+            animation: sparklePulse 1.5s ease infinite;
+        }
+
+        /* Confetti Styles */
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background-color: #FF6B9D;
+            opacity: 1;
+            z-index: 9999;
+            pointer-events: none;
+            animation: confettiFall 3s linear forwards;
+            top: -10px;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg) translateX(calc(var(--random-x) * 100px));
+                opacity: 0;
+            }
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 107, 157, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 107, 157, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 107, 157, 0.3); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes sparkle {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; transform: scale(1.5); }
+            100% { opacity: 1; }
+        }
+
+        @keyframes sparkleFloat {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-20px) rotate(180deg); opacity: 0; }
+        }
+
+        @keyframes sparklePulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.3; }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .welcome-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .logo {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .btn-modern {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+            
+            .feature {
+                min-width: 100%;
+            }
+            
+            .photo-strip {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .photo {
+                width: 80%;
+                height: 200px;
+            }
+
+            .floating-start-btn-container {
+                right: 15px;
+                bottom: 20px;
+            }
+
+            .floating-start-btn {
+                padding: 14px 20px;
+                font-size: 1rem;
+            }
+
+            .btn-emoji {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .floating-start-btn {
+                padding: 12px 18px;
+                font-size: 0.9rem;
+            }
+
+            .btn-emoji {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scroll animations
+            const animateOnScroll = () => {
+                document.querySelectorAll('[data-animation]').forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    const isVisible = (rect.top <= window.innerHeight * 0.8);
+                    
+                    if (isVisible) {
+                        const delay = el.dataset.delay || 0;
+                        setTimeout(() => {
+                            el.classList.add('animate');
+                        }, delay * 1000);
+                    }
+                });
+            };
+            
+            // Run on load and scroll
+            animateOnScroll();
+            window.addEventListener('scroll', animateOnScroll);
+            
+            // Photo hover effect
+            document.querySelectorAll('.photo').forEach(photo => {
+                photo.addEventListener('mouseenter', () => {
+                    photo.style.transform = 'scale(1.1) rotate(3deg)';
+                });
+                photo.addEventListener('mouseleave', () => {
+                    photo.style.transform = '';
+                });
+            });
+
+            // Original Confetti Function (falling from top)
+            function createConfetti() {
+                const colors = ['#FF6B9D', '#77DD77', '#FFD166', '#06D6A0', '#118AB2', '#EF476F', '#9D7A8F'];
+                
+                for (let i = 0; i < 75; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        
+                        // Random position across viewport width
+                        const startX = Math.random() * window.innerWidth;
+                        confetti.style.left = `${startX}px`;
+                        
+                        // Random size between 8px and 16px
+                        const size = Math.random() * 8 + 8;
+                        confetti.style.width = `${size}px`;
+                        confetti.style.height = `${size}px`;
+                        
+                        // Random shape
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                        
+                        // Random color
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        // Random drift (-100px to 100px)
+                        confetti.style.setProperty('--random-x', (Math.random() * 2 - 1));
+                        
+                        // Random rotation and duration
+                        const duration = Math.random() * 3 + 2;
+                        confetti.style.animationDuration = `${duration}s`;
+                        
+                        document.body.appendChild(confetti);
+                        
+                        // Clean up
+                        setTimeout(() => confetti.remove(), duration * 1000);
+                    }, i * 30);
+                }
+            }
+
+            // Confetti trigger for ALL buttons
+            document.querySelectorAll('.start-button, .floating-start-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    createConfetti();
+                    
+                    // Navigate after animation
+                    setTimeout(() => {
+                        window.location.href = this.href;
+                    }, 1000);
+                });
+            });
+
+            // Floating button visibility logic
+            const floatingBtn = document.getElementById('floating-btn');
+            const heroSection = document.getElementById('hero-section');
+            const finalCTA = document.getElementById('final-cta');
+            
+            function checkButtonVisibility() {
+                if (!floatingBtn || !heroSection || !finalCTA) return;
+                
+                const heroButton = heroSection.querySelector('.start-button');
+                const heroButtonRect = heroButton.getBoundingClientRect();
+                const finalCTARect = finalCTA.getBoundingClientRect();
+                
+                const heroButtonVisible = 
+                    heroButtonRect.top <= window.innerHeight * 0.75 && 
+                    heroButtonRect.bottom >= window.innerHeight * 0.25;
+                
+                const finalCTAVisible = 
+                    finalCTARect.top <= window.innerHeight * 0.75 && 
+                    finalCTARect.bottom >= window.innerHeight * 0.25;
+                
+                if (heroButtonVisible || finalCTAVisible) {
+                    floatingBtn.classList.add('hidden');
+                } else {
+                    floatingBtn.classList.remove('hidden');
+                }
+            }
+            
+            // Throttle scroll events
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(checkButtonVisibility, 50);
+            });
+            
+            // Initial check
+            checkButtonVisibility();
+            
+            // Floating button sparkle effect
+            const floatingButton = document.querySelector('.floating-start-btn');
+            if (floatingButton) {
+                floatingButton.addEventListener('mouseenter', function() {
+                    this.querySelectorAll('.sparkle').forEach(sparkle => {
+                        sparkle.style.opacity = '1';
+                    });
+                });
+                
+                floatingButton.addEventListener('mouseleave', function() {
+                    this.querySelectorAll('.sparkle').forEach(sparkle => {
+                        sparkle.style.opacity = '0';
+                    });
+                });
+            }
+        });
+    </script>
+{% endblock %}
