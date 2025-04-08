@@ -228,6 +228,30 @@
       class="sticker"
       draggable="true"
     />
+    <img
+    src="{{ url_for('static', filename='stickers/sticker8.png') }}"
+    alt="Sticker 8"
+    class="sticker"
+    draggable="true"
+  />
+  <img
+  src="{{ url_for('static', filename='stickers/sticker9.png') }}"
+  alt="Sticker 9"
+  class="sticker"
+  draggable="true"
+/>
+<img
+src="{{ url_for('static', filename='stickers/sticker10.png') }}"
+alt="Sticker 10"
+class="sticker"
+draggable="true"
+/>
+<img
+src="{{ url_for('static', filename='stickers/sticker11.png') }}"
+alt="Sticker 11"
+class="sticker"
+draggable="true"
+/>
           </div>
         </div>
   
@@ -771,17 +795,25 @@
       max-width: var(--strip-display-width);
     }
   
+    .strip-frame-container {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin: 0 auto;
+      overflow: visible;
+    }
+  
     .strip-frame {
       background: white;
       border-radius: 5px;
       padding: 5px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       border: 10px solid white;
       width: 100%;
       max-width: var(--strip-display-width);
       margin: 0 auto;
-      position: relative; /* Added for sticker positioning */
-      overflow: visible; /* Added to ensure full strip is visible */
+      position: relative;
+      overflow: visible;
     }
   
     #strip-canvas {
@@ -789,6 +821,7 @@
       height: auto !important;
       max-width: 100%;
       display: block;
+      border-radius: 5px;
     }
   
     /* ===== Camera Styles ===== */
@@ -1179,7 +1212,7 @@
     .sticker {
       width: 60px;
       height: 60px;
-      cursor: grab;
+      cursor: pointer;
       transition: all 0.3s;
       border-radius: 10px;
     }
@@ -1610,1283 +1643,1255 @@
       }
     }
   </style>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // DOM Elements
-      const video = document.getElementById("video");
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const stripCanvas = document.getElementById("strip-canvas");
-      const stripCtx = stripCanvas.getContext("2d");
-      const captureBtn = document.getElementById("capture-btn");
-      const saveBtn = document.getElementById("save-btn");
-      const qrBtn = document.getElementById("qr-btn");
-      const clearStickersBtn = document.getElementById("clear-stickers-btn");
-      const startBtn = document.getElementById("start-btn");
-      const moreTimeBtn = document.getElementById("more-time-btn");
-      const retryCameraBtn = document.getElementById("retry-camera-btn");
-      const countdownText = document.getElementById("countdown-text");
-      const countdownElement = document.getElementById("countdown");
-      const flashOverlay = document.querySelector(".flash-overlay");
-      const popupOverlay = document.getElementById("popup-overlay");
-      const popupMessage = document.getElementById("popup-message");
-      const popupButtons = document.getElementById("popup-buttons");
-      const allPhotosText = document.getElementById("all-photos-text");
-      const allPhotosCaptured = document.getElementById("all-photos-captured");
-      const stripPreview = document.getElementById("strip-preview");
-      const stripFrame = document.querySelector(".strip-frame");
-      const photoPreviewContainer = document.getElementById(
-        "photo-preview-container"
-      );
-      const photoPreviewSidebar = document.getElementById(
-        "photo-preview-sidebar"
-      );
-      const dropdown = document.querySelector(".custom-dropdown");
-      const selectedOption = dropdown.querySelector(".selected-option");
-      const dropdownOptions = dropdown.querySelector(".dropdown-options");
-      const colorOptions = document.querySelectorAll(".color-option");
-      const colorPages = document.querySelectorAll(".color-page");
-      const pageIndicators = document.querySelectorAll(".page-indicator");
-      const presets = document.querySelectorAll(".preset");
-      const stickers = document.querySelectorAll(".sticker");
-      const filterOptions = document.querySelectorAll(".filter-option");
-      const filterPanel = document.getElementById("filter-options");
-      const customizationPanel = document.getElementById("customization-options");
-      const qrCodeContainer = document.getElementById("qr-code-container");
-      const qrCodeElement = document.getElementById("qr-code");
-      const downloadQrBtn = document.getElementById("download-qr-btn");
-      const photoOptionsSection = document.querySelector(".photo-options");
-      const cameraErrorElement = document.getElementById("camera-error");
-      const cameraFrame = document.getElementById("camera-frame");
-      const uploadBtn = document.getElementById("upload-btn");
-      const photoUpload = document.getElementById("photo-upload");
-  
-      // State variables
-      let photos = [];
-      let selectedValue = 3;
-      let selectedColor = "#ff69b4";
-      let selectedFilter = "normal";
-      let isCapturing = false;
-      let activeSticker = null;
-      let isResizing = false;
-      let startX, startY, startWidth, startHeight;
-      let stickerContainers = [];
-      let countdownInterval;
-      let qrCodeGenerated = false;
-      let cameraStream = null;
-      let isMobile =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) ||
-        (navigator.maxTouchPoints > 0 &&
-          /iPad|Macintosh/i.test(navigator.userAgent));
-  
-      // Initialize camera with robust error handling
-      async function initCamera() {
-        try {
-          // Stop any existing stream
-          if (cameraStream) {
-            cameraStream.getTracks().forEach((track) => track.stop());
-          }
-  
-          cameraErrorElement.style.display = "none";
-          retryCameraBtn.style.display = "none";
-          captureBtn.disabled = true;
-  
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              width: { ideal: 1280 },
-              height: { ideal: 1280 },
-              facingMode: "user",
-            },
-            audio: false,
-          });
-  
-          cameraStream = stream;
-          video.srcObject = stream;
-          video.style.display = "block";
-  
-          // Wait for video to be ready
-          await new Promise((resolve) => {
-            video.onloadedmetadata = () => {
-              // Set canvas dimensions to match video aspect ratio
-              const aspectRatio = video.videoWidth / video.videoHeight;
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-  
-              video
-                .play()
-                .then(resolve)
-                .catch((err) => {
-                  console.error("Video play failed:", err);
-                  handleCameraError("Tap to enable camera");
-                });
-            };
-          });
-  
-          captureBtn.disabled = false;
-        } catch (err) {
-          console.error("Camera initialization error:", err);
-          handleCameraError(getUserFriendlyCameraError(err));
-        }
-      }
-  
-      function handleCameraError(message) {
-        cameraErrorElement.style.display = "flex";
-        video.style.display = "none";
-        captureBtn.disabled = true;
-        retryCameraBtn.style.display = "block";
-  
-        const errorText = cameraErrorElement.querySelector("p");
-        if (message) {
-          errorText.textContent = message;
-        }
-      }
-  
-      function getUserFriendlyCameraError(error) {
-        if (!error) return "Could not access camera. Please try again.";
-  
-        if (error.name === "NotAllowedError") {
-          return "Please allow camera permissions to use this feature";
-        } else if (error.name === "NotFoundError") {
-          return "No camera found on this device";
-        } else if (error.name === "NotReadableError") {
-          return "Camera is already in use by another application";
-        } else if (error.name === "OverconstrainedError") {
-          return "Camera doesn't meet requirements";
-        } else if (error.name === "SecurityError") {
-          return "Camera access is blocked for security reasons";
-        } else {
-          return "Could not access camera. Please try again.";
-        }
-      }
-  
-      // Initialize file upload functionality
-      function initFileUpload() {
-        // Click handler for upload button
-        uploadBtn.addEventListener("click", function() {
-          photoUpload.click();
-        });
-  
-        // File input change handler
-        photoUpload.addEventListener("change", function(e) {
-          const files = e.target.files;
-          if (files.length === 0) return;
-  
-          // Reset photos if needed
-          if (photos.length > 0) {
-            resetSession();
-          }
-  
-          // Process each file
-          const maxPhotos = parseInt(selectedValue);
-          let processedCount = 0;
-  
-          for (let i = 0; i < Math.min(files.length, maxPhotos); i++) {
-            const file = files[i];
-            if (!file.type.match("image.*")) continue;
-  
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              photos.push(event.target.result);
-              processedCount++;
-              
-              if (processedCount === Math.min(files.length, maxPhotos)) {
-                updatePhotoPreviews();
-                finishCaptureSession();
-                showPopup(`${processedCount} photos uploaded!`, 2000, false);
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-  
-        // Drag and drop functionality
-        photoPreviewContainer.addEventListener("dragover", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.classList.add("dragover");
-        });
-  
-        photoPreviewContainer.addEventListener("dragleave", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.classList.remove("dragover");
-        });
-  
-        photoPreviewContainer.addEventListener("drop", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.classList.remove("dragover");
-  
-          const files = e.dataTransfer.files;
-          if (files.length === 0) return;
-  
-          // Reset photos if needed
-          if (photos.length > 0) {
-            resetSession();
-          }
-  
-          // Process each file
-          const maxPhotos = parseInt(selectedValue);
-          let processedCount = 0;
-  
-          for (let i = 0; i < Math.min(files.length, maxPhotos); i++) {
-            const file = files[i];
-            if (!file.type.match("image.*")) continue;
-  
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              photos.push(event.target.result);
-              processedCount++;
-              
-              if (processedCount === Math.min(files.length, maxPhotos)) {
-                updatePhotoPreviews();
-                finishCaptureSession();
-                showPopup(`${processedCount} photos uploaded!`, 2000, false);
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-      }
-  
-      retryCameraBtn.addEventListener("click", function () {
-        initCamera();
-      });
-  
-      function initDropdown() {
-        selectedOption.addEventListener("click", function () {
-          dropdownOptions.style.display =
-            dropdownOptions.style.display === "block" ? "none" : "block";
-          const icon = this.querySelector("i");
-          icon.style.transform =
-            dropdownOptions.style.display === "block"
-              ? "rotate(180deg)"
-              : "rotate(0)";
-        });
-  
-        dropdownOptions.querySelectorAll("li").forEach((option) => {
-          option.addEventListener("click", function () {
-            selectedOption.querySelector("span").textContent = this.textContent;
-            selectedValue = parseInt(this.getAttribute("data-value")) || 3;
-            dropdownOptions.style.display = "none";
-            selectedOption.querySelector("i").style.transform = "rotate(0)";
-  
-            dropdownOptions.querySelectorAll("li").forEach((li) => {
-              li.classList.remove("selected");
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // DOM Elements
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const stripCanvas = document.getElementById("strip-canvas");
+        const stripCtx = stripCanvas.getContext("2d");
+        const captureBtn = document.getElementById("capture-btn");
+        const saveBtn = document.getElementById("save-btn");
+        const qrBtn = document.getElementById("qr-btn");
+        const clearStickersBtn = document.getElementById("clear-stickers-btn");
+        const startBtn = document.getElementById("start-btn");
+        const moreTimeBtn = document.getElementById("more-time-btn");
+        const retryCameraBtn = document.getElementById("retry-camera-btn");
+        const countdownText = document.getElementById("countdown-text");
+        const countdownElement = document.getElementById("countdown");
+        const flashOverlay = document.querySelector(".flash-overlay");
+        const popupOverlay = document.getElementById("popup-overlay");
+        const popupMessage = document.getElementById("popup-message");
+        const popupButtons = document.getElementById("popup-buttons");
+        const allPhotosText = document.getElementById("all-photos-text");
+        const allPhotosCaptured = document.getElementById("all-photos-captured");
+        const stripPreview = document.getElementById("strip-preview");
+        const stripFrame = document.querySelector(".strip-frame");
+        const photoPreviewContainer = document.getElementById(
+          "photo-preview-container"
+        );
+        const photoPreviewSidebar = document.getElementById(
+          "photo-preview-sidebar"
+        );
+        const dropdown = document.querySelector(".custom-dropdown");
+        const selectedOption = dropdown.querySelector(".selected-option");
+        const dropdownOptions = dropdown.querySelector(".dropdown-options");
+        const colorOptions = document.querySelectorAll(".color-option");
+        const colorPages = document.querySelectorAll(".color-page");
+        const pageIndicators = document.querySelectorAll(".page-indicator");
+        const presets = document.querySelectorAll(".preset");
+        const stickers = document.querySelectorAll(".sticker");
+        const filterOptions = document.querySelectorAll(".filter-option");
+        const filterPanel = document.getElementById("filter-options");
+        const customizationPanel = document.getElementById("customization-options");
+        const qrCodeContainer = document.getElementById("qr-code-container");
+        const qrCodeElement = document.getElementById("qr-code");
+        const downloadQrBtn = document.getElementById("download-qr-btn");
+        const photoOptionsSection = document.querySelector(".photo-options");
+        const cameraErrorElement = document.getElementById("camera-error");
+        const cameraFrame = document.getElementById("camera-frame");
+        const uploadBtn = document.getElementById("upload-btn");
+        const photoUpload = document.getElementById("photo-upload");
+
+        // State variables
+        let photos = [];
+        let selectedValue = 3;
+        let selectedColor = "#ff69b4";
+        let selectedFilter = "normal";
+        let isCapturing = false;
+        let activeSticker = null;
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight;
+        let stickerContainers = [];
+        let countdownInterval;
+        let qrCodeGenerated = false;
+        let cameraStream = null;
+        let isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          ) ||
+          (navigator.maxTouchPoints > 0 &&
+            /iPad|Macintosh/i.test(navigator.userAgent));
+
+        // Initialize camera with robust error handling
+        async function initCamera() {
+          try {
+            // Stop any existing stream
+            if (cameraStream) {
+              cameraStream.getTracks().forEach((track) => track.stop());
+            }
+
+            cameraErrorElement.style.display = "none";
+            retryCameraBtn.style.display = "none";
+            captureBtn.disabled = true;
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                width: { ideal: 1280 },
+                height: { ideal: 1280 },
+                facingMode: "user",
+              },
+              audio: false,
             });
-            this.classList.add("selected");
-  
-            if (
-              (selectedValue === 1 && photos.length > 1) ||
-              (selectedValue > 1 && photos.length > 0)
-            ) {
+
+            cameraStream = stream;
+            video.srcObject = stream;
+            video.style.display = "block";
+
+            // Wait for video to be ready
+            await new Promise((resolve) => {
+              video.onloadedmetadata = () => {
+                // Set canvas dimensions to match video aspect ratio
+                const aspectRatio = video.videoWidth / video.videoHeight;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                video
+                  .play()
+                  .then(resolve)
+                  .catch((err) => {
+                    console.error("Video play failed:", err);
+                    handleCameraError("Tap to enable camera");
+                  });
+              };
+            });
+
+            captureBtn.disabled = false;
+          } catch (err) {
+            console.error("Camera initialization error:", err);
+            handleCameraError(getUserFriendlyCameraError(err));
+          }
+        }
+
+        function handleCameraError(message) {
+          cameraErrorElement.style.display = "flex";
+          video.style.display = "none";
+          captureBtn.disabled = true;
+          retryCameraBtn.style.display = "block";
+
+          const errorText = cameraErrorElement.querySelector("p");
+          if (message) {
+            errorText.textContent = message;
+          }
+        }
+
+        function getUserFriendlyCameraError(error) {
+          if (!error) return "Could not access camera. Please try again.";
+
+          if (error.name === "NotAllowedError") {
+            return "Please allow camera permissions to use this feature";
+          } else if (error.name === "NotFoundError") {
+            return "No camera found on this device";
+          } else if (error.name === "NotReadableError") {
+            return "Camera is already in use by another application";
+          } else if (error.name === "OverconstrainedError") {
+            return "Camera doesn't meet requirements";
+          } else if (error.name === "SecurityError") {
+            return "Camera access is blocked for security reasons";
+          } else {
+            return "Could not access camera. Please try again.";
+          }
+        }
+
+        // Initialize file upload functionality
+        function initFileUpload() {
+          // Click handler for upload button
+          uploadBtn.addEventListener("click", function() {
+            photoUpload.click();
+          });
+
+          // File input change handler
+          photoUpload.addEventListener("change", function(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            // Reset photos if needed
+            if (photos.length > 0) {
               resetSession();
             }
-          });
-        });
-  
-        document.addEventListener("click", function (e) {
-          if (!dropdown.contains(e.target)) {
-            dropdownOptions.style.display = "none";
-            selectedOption.querySelector("i").style.transform = "rotate(0)";
-          }
-        });
-      }
-  
-      function initFilterOptions() {
-        filterOptions.forEach((filter) => {
-          filter.addEventListener("click", function () {
-            filterOptions.forEach((f) => f.classList.remove("selected"));
-            this.classList.add("selected");
-            selectedFilter = this.getAttribute("data-filter") || "normal";
-          });
-        });
-      }
-  
-      function initColorOptions() {
-        pageIndicators.forEach((indicator) => {
-          indicator.addEventListener("click", function () {
-            const page = this.getAttribute("data-page");
-            showColorPage(page);
-          });
-        });
-  
-        colorOptions.forEach((color) => {
-          color.addEventListener("click", function () {
-            colorOptions.forEach((c) => c.classList.remove("selected"));
-            this.classList.add("selected");
-            selectedColor = this.getAttribute("data-color") || "#ff69b4";
-  
-            if (photos.length > 0) {
-              generateStripPreview();
+
+            // Process each file
+            const maxPhotos = parseInt(selectedValue);
+            let processedCount = 0;
+
+            for (let i = 0; i < Math.min(files.length, maxPhotos); i++) {
+              const file = files[i];
+              if (!file.type.match("image.*")) continue;
+
+              const reader = new FileReader();
+              reader.onload = function(event) {
+                photos.push(event.target.result);
+                processedCount++;
+                
+                if (processedCount === Math.min(files.length, maxPhotos)) {
+                  updatePhotoPreviews();
+                  finishCaptureSession();
+                  showPopup(`${processedCount} photos uploaded!`, 2000, false);
+                }
+              };
+              reader.readAsDataURL(file);
             }
           });
-        });
-      }
-  
-      function showColorPage(page) {
-        colorPages.forEach((p) => {
-          if (p.getAttribute("data-page") === page) {
-            p.classList.add("active");
-          } else {
-            p.classList.remove("active");
-          }
-        });
-  
-        pageIndicators.forEach((indicator) => {
-          if (indicator.getAttribute("data-page") === page) {
-            indicator.classList.add("active");
-          } else {
-            indicator.classList.remove("active");
-          }
-        });
-      }
-  
-      function initStickers() {
-        stickers.forEach((sticker) => {
-          // For desktop - drag and drop
-          sticker.addEventListener("dragstart", function (e) {
-            e.dataTransfer.setData("text/plain", this.src);
+
+          // Drag and drop functionality
+          photoPreviewContainer.addEventListener("dragover", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.add("dragover");
           });
-  
-          // For mobile - click to add
-          if (isMobile) {
+
+          photoPreviewContainer.addEventListener("dragleave", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove("dragover");
+          });
+
+          photoPreviewContainer.addEventListener("drop", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.classList.remove("dragover");
+
+            const files = e.dataTransfer.files;
+            if (files.length === 0) return;
+
+            // Reset photos if needed
+            if (photos.length > 0) {
+              resetSession();
+            }
+
+            // Process each file
+            const maxPhotos = parseInt(selectedValue);
+            let processedCount = 0;
+
+            for (let i = 0; i < Math.min(files.length, maxPhotos); i++) {
+              const file = files[i];
+              if (!file.type.match("image.*")) continue;
+
+              const reader = new FileReader();
+              reader.onload = function(event) {
+                photos.push(event.target.result);
+                processedCount++;
+                
+                if (processedCount === Math.min(files.length, maxPhotos)) {
+                  updatePhotoPreviews();
+                  finishCaptureSession();
+                  showPopup(`${processedCount} photos uploaded!`, 2000, false);
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+        }
+
+        retryCameraBtn.addEventListener("click", function () {
+          initCamera();
+        });
+
+        function initDropdown() {
+          selectedOption.addEventListener("click", function () {
+            dropdownOptions.style.display =
+              dropdownOptions.style.display === "block" ? "none" : "block";
+            const icon = this.querySelector("i");
+            icon.style.transform =
+              dropdownOptions.style.display === "block"
+                ? "rotate(180deg)"
+                : "rotate(0)";
+          });
+
+          dropdownOptions.querySelectorAll("li").forEach((option) => {
+            option.addEventListener("click", function () {
+              selectedOption.querySelector("span").textContent = this.textContent;
+              selectedValue = parseInt(this.getAttribute("data-value")) || 3;
+              dropdownOptions.style.display = "none";
+              selectedOption.querySelector("i").style.transform = "rotate(0)";
+
+              dropdownOptions.querySelectorAll("li").forEach((li) => {
+                li.classList.remove("selected");
+              });
+              this.classList.add("selected");
+
+              if (
+                (selectedValue === 1 && photos.length > 1) ||
+                (selectedValue > 1 && photos.length > 0)
+              ) {
+                resetSession();
+              }
+            });
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!dropdown.contains(e.target)) {
+              dropdownOptions.style.display = "none";
+              selectedOption.querySelector("i").style.transform = "rotate(0)";
+            }
+          });
+        }
+
+        function initFilterOptions() {
+          filterOptions.forEach((filter) => {
+            filter.addEventListener("click", function () {
+              filterOptions.forEach((f) => f.classList.remove("selected"));
+              this.classList.add("selected");
+              selectedFilter = this.getAttribute("data-filter") || "normal";
+            });
+          });
+        }
+
+        function initColorOptions() {
+          pageIndicators.forEach((indicator) => {
+            indicator.addEventListener("click", function () {
+              const page = this.getAttribute("data-page");
+              showColorPage(page);
+            });
+          });
+
+          colorOptions.forEach((color) => {
+            color.addEventListener("click", function () {
+              colorOptions.forEach((c) => c.classList.remove("selected"));
+              this.classList.add("selected");
+              selectedColor = this.getAttribute("data-color") || "#ff69b4";
+
+              if (photos.length > 0) {
+                generateStripPreview();
+              }
+            });
+          });
+        }
+
+        function showColorPage(page) {
+          colorPages.forEach((p) => {
+            if (p.getAttribute("data-page") === page) {
+              p.classList.add("active");
+            } else {
+              p.classList.remove("active");
+            }
+          });
+
+          pageIndicators.forEach((indicator) => {
+            if (indicator.getAttribute("data-page") === page) {
+              indicator.classList.add("active");
+            } else {
+              indicator.classList.remove("active");
+            }
+          });
+        }
+
+        function initStickers() {
+          stickers.forEach((sticker) => {
+            // For desktop - drag and drop
+            sticker.addEventListener("dragstart", function (e) {
+              e.dataTransfer.setData("text/plain", this.src);
+            });
+
+            // For both desktop and mobile - click to add
             sticker.addEventListener("click", function () {
               const rect = stripFrame.getBoundingClientRect();
               const centerX = rect.width / 2;
               const centerY = rect.height / 2;
               createStickerContainer(this.src, centerX, centerY, 80, 80);
-              showPopup("Sticker added! Tap and hold to move", 1500, false);
+              showPopup("Sticker added! Drag to position", 1500, false);
             });
-          }
-        });
-  
-        stripFrame.addEventListener("dragover", function (e) {
-          e.preventDefault();
-        });
-  
-        stripFrame.addEventListener("drop", function (e) {
-          e.preventDefault();
-          const stickerSrc = e.dataTransfer.getData("text/plain");
-          if (stickerSrc) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            createStickerContainer(stickerSrc, x, y);
-          }
-        });
-      }
-  
-      function createStickerContainer(src, x, y, width = 50, height = 50) {
-        const container = document.createElement("div");
-        container.className = "sticker-container";
-        container.style.position = "absolute";
-        container.style.left = `${x - width / 2}px`;
-        container.style.top = `${y - height / 2}px`;
-        container.style.width = `${width}px`;
-        container.style.height = `${height}px`;
-        container.style.zIndex = "10";
-        container.style.cursor = "move";
-  
-        const img = document.createElement("img");
-        img.src = src;
-        img.style.width = "100%";
-        img.style.height = "100%";
-        img.style.pointerEvents = "none";
-        img.style.userSelect = "none";
-  
-        const resizeHandle = document.createElement("div");
-        resizeHandle.className = "resize-handle";
-        resizeHandle.style.position = "absolute";
-        resizeHandle.style.width = isMobile ? "20px" : "12px";
-        resizeHandle.style.height = isMobile ? "20px" : "12px";
-        resizeHandle.style.background = "white";
-        resizeHandle.style.border = "2px solid var(--pink)";
-        resizeHandle.style.borderRadius = "50%";
-        resizeHandle.style.right = isMobile ? "-10px" : "-6px";
-        resizeHandle.style.bottom = isMobile ? "-10px" : "-6px";
-        resizeHandle.style.cursor = "nwse-resize";
-        resizeHandle.style.zIndex = "11";
-  
-        container.appendChild(img);
-        container.appendChild(resizeHandle);
-        stripFrame.appendChild(container);
-  
-        setupStickerInteractions(container, resizeHandle);
-        stickerContainers.push(container);
-        return container;
-      }
-  
-      function setupStickerInteractions(container, resizeHandle) {
-        // Common functions for both mouse and touch
-        function startMoving(e) {
-          e.preventDefault();
-          activeSticker = container;
-          container.style.boxShadow = "0 0 15px rgba(255,105,180,0.7)";
-  
-          const clientX = e.clientX || e.touches[0].clientX;
-          const clientY = e.clientY || e.touches[0].clientY;
-  
-          startX = clientX;
-          startY = clientY;
-          const rect = container.getBoundingClientRect();
-          const offsetX = startX - rect.left;
-          const offsetY = startY - rect.top;
-  
-          function moveSticker(e) {
-            if (!activeSticker) return;
-            const previewRect = stripFrame.getBoundingClientRect();
-            const currentX = e.clientX || e.touches[0].clientX;
-            const currentY = e.clientY || e.touches[0].clientY;
-            
-            // Calculate new position relative to strip frame
-            let newX = currentX - offsetX - previewRect.left;
-            let newY = currentY - offsetY - previewRect.top;
-  
-            // Constrain to strip frame boundaries
-            const maxX = stripFrame.offsetWidth - container.offsetWidth;
-            const maxY = stripFrame.offsetHeight - container.offsetHeight;
-  
-            container.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
-            container.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
-          }
-  
-          function stopMoving() {
-            document.removeEventListener("mousemove", moveSticker);
-            document.removeEventListener("touchmove", moveSticker);
-            document.removeEventListener("mouseup", stopMoving);
-            document.removeEventListener("touchend", stopMoving);
-            if (activeSticker) {
-              activeSticker.style.boxShadow = "none";
-              activeSticker = null;
+          });
+
+          stripFrame.addEventListener("dragover", function (e) {
+            e.preventDefault();
+          });
+
+          stripFrame.addEventListener("drop", function (e) {
+            e.preventDefault();
+            const stickerSrc = e.dataTransfer.getData("text/plain");
+            if (stickerSrc) {
+              const rect = this.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              createStickerContainer(stickerSrc, x, y);
             }
-          }
-  
-          document.addEventListener("mousemove", moveSticker);
-          document.addEventListener("touchmove", moveSticker, { passive: false });
-          document.addEventListener("mouseup", stopMoving);
-          document.addEventListener("touchend", stopMoving);
+          });
         }
-  
-        // Mouse events
-        container.addEventListener("mousedown", function (e) {
-          if (e.target === container || e.target === container.querySelector("img")) {
-            startMoving(e);
-          }
-        });
-  
-        // Touch events for mobile
-        container.addEventListener("touchstart", function (e) {
-          if (e.target === container || e.target === container.querySelector("img")) {
-            startMoving(e);
-          }
-        }, { passive: false });
-  
-        // Resize handle interactions
-        function startResizing(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          isResizing = true;
-          activeSticker = container;
-          container.style.boxShadow = "0 0 15px rgba(255,105,180,0.7)";
-  
-          const clientX = e.clientX || e.touches[0].clientX;
-          const clientY = e.clientY || e.touches[0].clientY;
-  
-          startX = clientX;
-          startY = clientY;
-          startWidth = parseInt(container.style.width);
-          startHeight = parseInt(container.style.height);
-  
-          function resizeSticker(e) {
-            if (!isResizing || !activeSticker) return;
-  
-            const currentX = e.clientX || e.touches[0].clientX;
-            const currentY = e.clientY || e.touches[0].clientY;
-            const width = startWidth + (currentX - startX);
-            const height = startHeight + (currentY - startY);
-  
-            const minSize = isMobile ? 40 : 20;
-            const newWidth = Math.max(minSize, width);
-            const newHeight = Math.max(minSize, height);
-  
-            container.style.width = `${newWidth}px`;
-            container.style.height = `${newHeight}px`;
-          }
-  
-          function stopResizing() {
-            isResizing = false;
-            document.removeEventListener("mousemove", resizeSticker);
-            document.removeEventListener("touchmove", resizeSticker);
-            document.removeEventListener("mouseup", stopResizing);
-            document.removeEventListener("touchend", stopResizing);
-            if (activeSticker) {
-              activeSticker.style.boxShadow = "none";
-              activeSticker = null;
+
+        function createStickerContainer(src, x, y, width = 50, height = 50) {
+          const container = document.createElement("div");
+          container.className = "sticker-container";
+          container.style.position = "absolute";
+          container.style.left = `${x - width / 2}px`;
+          container.style.top = `${y - height / 2}px`;
+          container.style.width = `${width}px`;
+          container.style.height = `${height}px`;
+          container.style.zIndex = "10";
+          container.style.cursor = "move";
+
+          const img = document.createElement("img");
+          img.src = src;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.pointerEvents = "none";
+          img.style.userSelect = "none";
+
+          const resizeHandle = document.createElement("div");
+          resizeHandle.className = "resize-handle";
+          resizeHandle.style.position = "absolute";
+          resizeHandle.style.width = isMobile ? "20px" : "12px";
+          resizeHandle.style.height = isMobile ? "20px" : "12px";
+          resizeHandle.style.background = "white";
+          resizeHandle.style.border = "2px solid var(--pink)";
+          resizeHandle.style.borderRadius = "50%";
+          resizeHandle.style.right = isMobile ? "-10px" : "-6px";
+          resizeHandle.style.bottom = isMobile ? "-10px" : "-6px";
+          resizeHandle.style.cursor = "nwse-resize";
+          resizeHandle.style.zIndex = "11";
+
+          container.appendChild(img);
+          container.appendChild(resizeHandle);
+          stripFrame.appendChild(container);
+
+          setupStickerInteractions(container, resizeHandle);
+          stickerContainers.push(container);
+          return container;
+        }
+
+        function setupStickerInteractions(container, resizeHandle) {
+          // Common functions for both mouse and touch
+          function startMoving(e) {
+            e.preventDefault();
+            activeSticker = container;
+            container.style.boxShadow = "0 0 15px rgba(255,105,180,0.7)";
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            startX = clientX;
+            startY = clientY;
+            const rect = container.getBoundingClientRect();
+            const offsetX = startX - rect.left;
+            const offsetY = startY - rect.top;
+
+            function moveSticker(e) {
+              if (!activeSticker) return;
+              const previewRect = stripFrame.getBoundingClientRect();
+              const currentX = e.clientX || e.touches[0].clientX;
+              const currentY = e.clientY || e.touches[0].clientY;
+              
+              // Calculate new position relative to strip frame
+              let newX = currentX - offsetX - previewRect.left;
+              let newY = currentY - offsetY - previewRect.top;
+
+              // Constrain to strip frame boundaries
+              const maxX = stripFrame.offsetWidth - container.offsetWidth;
+              const maxY = stripFrame.offsetHeight - container.offsetHeight;
+
+              container.style.left = `${Math.max(0, Math.min(newX, maxX))}px`;
+              container.style.top = `${Math.max(0, Math.min(newY, maxY))}px`;
             }
+
+            function stopMoving() {
+              document.removeEventListener("mousemove", moveSticker);
+              document.removeEventListener("touchmove", moveSticker);
+              document.removeEventListener("mouseup", stopMoving);
+              document.removeEventListener("touchend", stopMoving);
+              if (activeSticker) {
+                activeSticker.style.boxShadow = "none";
+                activeSticker = null;
+              }
+            }
+
+            document.addEventListener("mousemove", moveSticker);
+            document.addEventListener("touchmove", moveSticker, { passive: false });
+            document.addEventListener("mouseup", stopMoving);
+            document.addEventListener("touchend", stopMoving);
           }
-  
-          document.addEventListener("mousemove", resizeSticker);
-          document.addEventListener("touchmove", resizeSticker, { passive: false });
-          document.addEventListener("mouseup", stopResizing);
-          document.addEventListener("touchend", stopResizing);
-        }
-  
-        // Mouse events for resize
-        resizeHandle.addEventListener("mousedown", startResizing);
-  
-        // Touch events for resize on mobile
-        resizeHandle.addEventListener("touchstart", startResizing, {
-          passive: false,
-        });
-      }
-  
-      function showPopup(message, duration = 0, showButtons = false) {
-        popupMessage.textContent = message;
-        popupOverlay.style.display = "flex";
-        popupButtons.style.display = showButtons ? "flex" : "none";
-  
-        if (duration > 0) {
-          setTimeout(hidePopup, duration);
-        }
-      }
-  
-      function hidePopup() {
-        popupOverlay.style.display = "none";
-      }
-  
-      startBtn.addEventListener("click", () => {
-        hidePopup();
-        startCountdown();
-      });
-  
-      moreTimeBtn.addEventListener("click", hidePopup);
-  
-      captureBtn.addEventListener("click", async function () {
-        if (!video.srcObject || video.paused) {
-          showPopup("Camera not ready. Please wait...", 2000, false);
-          try {
-            await initCamera();
-          } catch (e) {
-            console.error("Camera initialization failed:", e);
+
+          // Mouse events
+          container.addEventListener("mousedown", function (e) {
+            if (e.target === container || e.target === container.querySelector("img")) {
+              startMoving(e);
+            }
+          });
+
+          // Touch events for mobile
+          container.addEventListener("touchstart", function (e) {
+            if (e.target === container || e.target === container.querySelector("img")) {
+              startMoving(e);
+            }
+          }, { passive: false });
+
+          // Resize handle interactions
+          function startResizing(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            isResizing = true;
+            activeSticker = container;
+            container.style.boxShadow = "0 0 15px rgba(255,105,180,0.7)";
+
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            startX = clientX;
+            startY = clientY;
+            startWidth = parseInt(container.style.width);
+            startHeight = parseInt(container.style.height);
+
+            function resizeSticker(e) {
+              if (!isResizing || !activeSticker) return;
+
+              const currentX = e.clientX || e.touches[0].clientX;
+              const currentY = e.clientY || e.touches[0].clientY;
+              const width = startWidth + (currentX - startX);
+              const height = startHeight + (currentY - startY);
+
+              const minSize = isMobile ? 40 : 20;
+              const newWidth = Math.max(minSize, width);
+              const newHeight = Math.max(minSize, height);
+
+              container.style.width = `${newWidth}px`;
+              container.style.height = `${newHeight}px`;
+            }
+
+            function stopResizing() {
+              isResizing = false;
+              document.removeEventListener("mousemove", resizeSticker);
+              document.removeEventListener("touchmove", resizeSticker);
+              document.removeEventListener("mouseup", stopResizing);
+              document.removeEventListener("touchend", stopResizing);
+              if (activeSticker) {
+                activeSticker.style.boxShadow = "none";
+                activeSticker = null;
+              }
+            }
+
+            document.addEventListener("mousemove", resizeSticker);
+            document.addEventListener("touchmove", resizeSticker, { passive: false });
+            document.addEventListener("mouseup", stopResizing);
+            document.addEventListener("touchend", stopResizing);
           }
-          return;
+
+          // Mouse events for resize
+          resizeHandle.addEventListener("mousedown", startResizing);
+
+          // Touch events for resize on mobile
+          resizeHandle.addEventListener("touchstart", startResizing, {
+            passive: false,
+          });
         }
-  
-        if (isCapturing) {
-          showPopup("Already capturing!", 1500, false);
-          return;
+
+        function showPopup(message, duration = 0, showButtons = false) {
+          popupMessage.textContent = message;
+          popupOverlay.style.display = "flex";
+          popupButtons.style.display = showButtons ? "flex" : "none";
+
+          if (duration > 0) {
+            setTimeout(hidePopup, duration);
+          }
         }
-  
-        if (photos.length > 0) {
-          resetSession();
-          filterPanel.style.display = "grid";
-          customizationPanel.style.display = "none";
-          clearStickersBtn.style.display = "none";
-          saveBtn.style.display = "none";
-          qrBtn.style.display = "none";
-          return;
+
+        function hidePopup() {
+          popupOverlay.style.display = "none";
         }
-  
-        const photoCount = parseInt(selectedValue);
-  
-        if (photos.length >= photoCount) {
-          showPopup(`Maximum ${photoCount} photos captured!`, 2000, false);
-          return;
-        }
-  
-        if (photos.length === 0) {
-          showPopup("Get ready! First photo in 3 seconds!", 0, true);
-        } else {
+
+        startBtn.addEventListener("click", () => {
+          hidePopup();
           startCountdown();
+        });
+
+        moreTimeBtn.addEventListener("click", hidePopup);
+
+        captureBtn.addEventListener("click", async function () {
+          if (!video.srcObject || video.paused) {
+            showPopup("Camera not ready. Please wait...", 2000, false);
+            try {
+              await initCamera();
+            } catch (e) {
+              console.error("Camera initialization failed:", e);
+            }
+            return;
+          }
+
+          if (isCapturing) {
+            showPopup("Already capturing!", 1500, false);
+            return;
+          }
+
+          if (photos.length > 0) {
+            resetSession();
+            filterPanel.style.display = "grid";
+            customizationPanel.style.display = "none";
+            clearStickersBtn.style.display = "none";
+            saveBtn.style.display = "none";
+            qrBtn.style.display = "none";
+            return;
+          }
+
+          const photoCount = parseInt(selectedValue);
+
+          if (photos.length >= photoCount) {
+            showPopup(`Maximum ${photoCount} photos captured!`, 2000, false);
+            return;
+          }
+
+          if (photos.length === 0) {
+            showPopup("Get ready! First photo in 3 seconds!", 0, true);
+          } else {
+            startCountdown();
+          }
+        });
+
+        function startCountdown() {
+          isCapturing = true;
+          captureBtn.disabled = true;
+          let count = 3;
+
+          countdownElement.style.opacity = "1";
+          countdownText.textContent = count;
+
+          countdownInterval = setInterval(() => {
+            count--;
+            countdownText.textContent = count > 0 ? count : "CHEESE!";
+
+            if (count === 0) {
+              clearInterval(countdownInterval);
+
+              setTimeout(async () => {
+                if (video.paused) {
+                  try {
+                    await video.play();
+                  } catch (e) {
+                    console.error("Video play failed:", e);
+                    resetCapture();
+                    return;
+                  }
+                }
+
+                await capturePhoto();
+                countdownElement.style.opacity = "0";
+
+                if (photos.length < parseInt(selectedValue)) {
+                  startCountdown();
+                } else {
+                  finishCaptureSession();
+                }
+              }, 300);
+            }
+          }, 1000);
         }
-      });
-  
-      function startCountdown() {
-        isCapturing = true;
-        captureBtn.disabled = true;
-        let count = 3;
-  
-        countdownElement.style.opacity = "1";
-        countdownText.textContent = count;
-  
-        countdownInterval = setInterval(() => {
-          count--;
-          countdownText.textContent = count > 0 ? count : "CHEESE!";
-  
-          if (count === 0) {
-            clearInterval(countdownInterval);
-  
-            setTimeout(async () => {
-              if (video.paused) {
-                try {
-                  await video.play();
-                } catch (e) {
-                  console.error("Video play failed:", e);
-                  resetCapture();
-                  return;
+
+        function applyFilter(imageData) {
+          const data = imageData.data;
+
+          switch (selectedFilter) {
+            case "grayscale":
+              for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                data[i] = avg;
+                data[i + 1] = avg;
+                data[i + 2] = avg;
+              }
+              break;
+
+            case "sepia":
+              for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+                data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+                data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
+              }
+              break;
+
+            case "invert":
+              for (let i = 0; i < data.length; i += 4) {
+                data[i] = 255 - data[i];
+                data[i + 1] = 255 - data[i + 1];
+                data[i + 2] = 255 - data[i + 2];
+              }
+              break;
+          }
+
+          return imageData;
+        }
+
+        async function capturePhoto() {
+          try {
+            if (!video || video.readyState < 2) {
+              throw new Error("Video not ready");
+            }
+
+            // Set canvas dimensions to match video resolution
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw the image with mirror effect
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(
+              video,
+              -video.videoWidth,
+              0,
+              video.videoWidth,
+              video.videoHeight
+            );
+            ctx.restore();
+
+            if (selectedFilter !== "normal") {
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const filteredData = applyFilter(imageData);
+              ctx.putImageData(filteredData, 0, 0);
+            }
+
+            // Trigger flash effect
+            if (flashOverlay) {
+              flashOverlay.style.animation = "none";
+              void flashOverlay.offsetWidth; // Trigger reflow
+              flashOverlay.style.animation = "flash 0.5s ease-out";
+            }
+
+            // Get the image data and add to photos array
+            const photoData = canvas.toDataURL("image/png");
+            photos.push(photoData);
+
+            updatePhotoPreviews();
+          } catch (error) {
+            console.error("Capture failed:", error);
+            showPopup("Capture failed. Please try again.", 2000, false);
+            resetCapture();
+          }
+        }
+
+        function updatePhotoPreviews() {
+          photoPreviewContainer.innerHTML = "";
+
+          if (photos.length === 0) {
+            photoPreviewContainer.innerHTML = `
+                        <div class="preview-placeholder">
+                            <i class="fas fa-camera"></i>
+                            <p>Your photos will appear here</p>
+                        </div>
+                    `;
+            return;
+          }
+
+          photos.forEach((photo, index) => {
+            const previewDiv = document.createElement("div");
+            previewDiv.className = "photo-preview-item animate";
+            previewDiv.innerHTML = `
+                        <div class="photo-preview-number">${index + 1}</div>
+                        <img src="${photo}" class="photo-preview" alt="Photo ${
+              index + 1
+            }">
+                    `;
+            photoPreviewContainer.appendChild(previewDiv);
+          });
+        }
+
+        function resetCapture() {
+          isCapturing = false;
+          captureBtn.disabled = false;
+          countdownElement.style.opacity = "0";
+          if (countdownInterval) clearInterval(countdownInterval);
+        }
+
+        function resetSession() {
+          photos = [];
+          updatePhotoPreviews();
+          stripPreview.style.display = "none";
+          allPhotosCaptured.style.display = "none";
+          video.style.display = "block";
+          cameraFrame.style.display = "block";
+          photoPreviewSidebar.style.display = "block";
+          photoOptionsSection.style.display = "flex";
+          stickerContainers.forEach((container) => {
+            container.remove();
+          });
+          stickerContainers = [];
+          qrCodeContainer.style.display = "none";
+          qrCodeElement.innerHTML = "";
+          qrCodeGenerated = false;
+        }
+
+        async function finishCaptureSession() {
+          isCapturing = false;
+          allPhotosText.textContent = `All ${photos.length} photos captured!`;
+          allPhotosCaptured.style.display = "block";
+
+          try {
+            await generateStripPreview();
+            stripPreview.style.display = "block";
+            video.style.display = "none";
+            cameraFrame.style.display = "none";
+            photoPreviewSidebar.style.display = "none";
+            photoOptionsSection.style.display = "none";
+            captureBtn.disabled = false;
+
+            filterPanel.style.display = "none";
+            customizationPanel.style.display = "grid";
+            clearStickersBtn.style.display = "block";
+            saveBtn.style.display = "block";
+            qrBtn.style.display = "block";
+          } catch (error) {
+            console.error("Preview generation failed:", error);
+            showPopup("Couldn't generate preview", 2000, false);
+          }
+        }
+
+        async function generateStripPreview() {
+          return new Promise((resolve) => {
+            // Calculate dimensions based on device pixel ratio for high DPI displays
+            const pixelRatio = window.devicePixelRatio || 1;
+            const targetWidth = 1200 * pixelRatio;
+            const targetHeight = 800 * pixelRatio;
+            const spacing = 15 * pixelRatio;
+            const stripPadding = 60 * pixelRatio; // Increased padding
+            const borderWidth = 40 * pixelRatio;
+            const bottomMargin = 180 * pixelRatio; // Increased margin for text
+            const sideMargin = 40 * pixelRatio; // Added side margin
+
+            // Calculate total strip height based on number of photos
+            const stripHeight = 
+              (targetHeight + spacing) * photos.length - 
+              spacing + 
+              stripPadding * 2 + 
+              bottomMargin;
+
+            // Set canvas dimensions (actual pixels)
+            stripCanvas.width = targetWidth + sideMargin * 2 + borderWidth * 2;
+            stripCanvas.height = stripHeight + borderWidth * 2;
+
+            // Set CSS dimensions (display size) using our variables
+            const displayWidth = isMobile 
+              ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--strip-display-mobile'))
+              : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--strip-display-width'));
+            
+            stripCanvas.style.width = `${displayWidth}px`;
+            stripCanvas.style.height = `${(stripHeight / targetWidth) * displayWidth}px`;
+
+            stripCtx.clearRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+            // Draw the white border background
+            stripCtx.fillStyle = "white";
+            stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
+
+            // Handle different background types
+            if (selectedColor.startsWith("linear-gradient")) {
+              try {
+                const gradientParams = selectedColor.match(
+                  /linear-gradient\((.+)\)/
+                )[1];
+                const parts = gradientParams.split(/,(?=\s*(?:#|rgb|hsl|var))/);
+
+                let angle = 135;
+                const angleMatch = parts[0].match(/(\d+)deg/);
+                if (angleMatch) {
+                  angle = parseInt(angleMatch[1]);
+                  parts.shift();
+                }
+
+                const angleRad = ((angle - 90) * Math.PI) / 180;
+                const length = Math.sqrt(
+                  stripCanvas.width * stripCanvas.width +
+                    stripCanvas.height * stripCanvas.height
+                );
+                const x1 =
+                  stripCanvas.width / 2 - (Math.cos(angleRad) * length) / 2;
+                const y1 =
+                  stripCanvas.height / 2 - (Math.sin(angleRad) * length) / 2;
+                const x2 =
+                  stripCanvas.width / 2 + (Math.cos(angleRad) * length) / 2;
+                const y2 =
+                  stripCanvas.height / 2 + (Math.sin(angleRad) * length) / 2;
+
+                const gradient = stripCtx.createLinearGradient(x1, y1, x2, y2);
+
+                parts.forEach((stop, i) => {
+                  const color = stop.trim();
+                  const pos = i / (parts.length - 1);
+                  gradient.addColorStop(pos, color);
+                });
+
+                stripCtx.fillStyle = gradient;
+              } catch (e) {
+                console.error("Error creating gradient:", e);
+                stripCtx.fillStyle = "#ff69b4";
+              }
+            } else if (selectedColor.startsWith("url(")) {
+              const patternImg = new Image();
+              patternImg.onload = () => {
+                const pattern = stripCtx.createPattern(patternImg, "repeat");
+                stripCtx.fillStyle = pattern;
+                drawStripBackground();
+              };
+              patternImg.onerror = () => {
+                console.error("Failed to load pattern image");
+                stripCtx.fillStyle = "#ff69b4";
+                drawStripBackground();
+              };
+              patternImg.src = selectedColor.match(/url\(['"]?(.*?)['"]?\)/)[1];
+              return;
+            } else {
+              stripCtx.fillStyle = selectedColor;
+            }
+
+            drawStripBackground();
+
+            function drawStripBackground() {
+              // Draw the colored background with border padding
+              stripCtx.fillRect(
+                borderWidth,
+                borderWidth,
+                stripCanvas.width - borderWidth * 2,
+                stripCanvas.height - borderWidth * 2
+              );
+            }
+
+            // Create an array of promises for loading all photos
+            const photoPromises = photos.map((photo, index) => {
+              return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                  // Center the photo horizontally with border padding and side margin
+                  const x =
+                    borderWidth + sideMargin +
+                    (stripCanvas.width - borderWidth * 2 - sideMargin * 2 - targetWidth) / 2;
+
+                  // Calculate y position based on photo index with border padding
+                  const y =
+                    borderWidth + stripPadding + (targetHeight + spacing) * index;
+
+                  // Draw the photo with rectangular dimensions
+                  stripCtx.drawImage(
+                    img,
+                    0,
+                    0,
+                    img.width,
+                    img.height,
+                    x,
+                    y,
+                    targetWidth,
+                    targetHeight
+                  );
+                  resolve();
+                };
+                img.onerror = () => {
+                  console.error("Failed to load photo for strip");
+                  resolve();
+                };
+                img.src = photo;
+              });
+            });
+
+            // Wait for all photos to load and draw
+            Promise.all(photoPromises).then(() => {
+              // Add stickers to the strip
+              stickerContainers.forEach((container) => {
+                const img = container.querySelector("img");
+                if (!img) return;
+
+                const rect = container.getBoundingClientRect();
+                const previewRect = stripFrame.getBoundingClientRect();
+
+                const x = borderWidth + sideMargin + (rect.left - previewRect.left) * pixelRatio;
+                const y = borderWidth + (rect.top - previewRect.top) * pixelRatio;
+                const width = parseInt(container.style.width) * pixelRatio;
+                const height = parseInt(container.style.height) * pixelRatio;
+
+                const tempImg = new Image();
+                tempImg.onload = () => {
+                  stripCtx.drawImage(tempImg, x, y, width, height);
+                };
+                tempImg.src = img.src;
+              });
+
+              addStripMetadata();
+              resolve();
+            });
+          });
+        }
+
+        function addStripMetadata() {
+          const now = new Date();
+          const date = now.toLocaleDateString();
+          const time = now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          stripCtx.fillStyle = "#000";
+          stripCtx.font = `bold ${36 * (window.devicePixelRatio || 1)}px 'Montserrat', sans-serif`; // Increased font size
+          stripCtx.textAlign = "center";
+
+          const text = `${date} ${time} - PicoBooth`;
+          const textX = stripCanvas.width / 2;
+          const textY = stripCanvas.height - (60 * (window.devicePixelRatio || 1)); // Adjusted position for larger font
+
+          // Add text shadow for better visibility
+          stripCtx.shadowColor = "rgba(255,255,255,0.7)";
+          stripCtx.shadowBlur = 5 * (window.devicePixelRatio || 1);
+          stripCtx.shadowOffsetX = 1 * (window.devicePixelRatio || 1);
+          stripCtx.shadowOffsetY = 1 * (window.devicePixelRatio || 1);
+
+          stripCtx.fillText(text, textX, textY);
+
+          // Reset shadow
+          stripCtx.shadowColor = "transparent";
+        }
+        function generateQRCode() {
+          if (qrCodeGenerated) {
+            qrCodeContainer.style.display =
+              qrCodeContainer.style.display === "block" ? "none" : "block";
+            return;
+          }
+
+          try {
+            const uniqueId =
+              Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+            const qrData = `${window.location.origin}${window.location.pathname}?strip=${uniqueId}`;
+
+            qrCodeElement.innerHTML = "";
+
+            const qr = qrcode(0, "H");
+            qr.addData(qrData);
+            qr.make();
+
+            const qrSize = 150;
+            const qrCanvas = document.createElement("canvas");
+            qrCanvas.width = qrSize;
+            qrCanvas.height = qrSize;
+            const qrCtx = qrCanvas.getContext("2d");
+
+            const moduleCount = qr.getModuleCount();
+            const moduleSize = qrSize / moduleCount;
+
+            qrCtx.fillStyle = "#ffffff";
+            qrCtx.fillRect(0, 0, qrSize, qrSize);
+
+            qrCtx.fillStyle = "#000000";
+            for (let row = 0; row < moduleCount; row++) {
+              for (let col = 0; col < moduleCount; col++) {
+                if (qr.isDark(row, col)) {
+                  qrCtx.fillRect(
+                    col * moduleSize,
+                    row * moduleSize,
+                    moduleSize,
+                    moduleSize
+                  );
                 }
               }
-  
-              await capturePhoto();
-              countdownElement.style.opacity = "0";
-  
-              if (photos.length < parseInt(selectedValue)) {
-                startCountdown();
-              } else {
-                finishCaptureSession();
-              }
-            }, 300);
-          }
-        }, 1000);
-      }
-  
-      function applyFilter(imageData) {
-        const data = imageData.data;
-  
-        switch (selectedFilter) {
-          case "grayscale":
-            for (let i = 0; i < data.length; i += 4) {
-              const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-              data[i] = avg;
-              data[i + 1] = avg;
-              data[i + 2] = avg;
             }
-            break;
-  
-          case "sepia":
-            for (let i = 0; i < data.length; i += 4) {
-              const r = data[i];
-              const g = data[i + 1];
-              const b = data[i + 2];
-  
-              data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
-              data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
-              data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
-            }
-            break;
-  
-          case "invert":
-            for (let i = 0; i < data.length; i += 4) {
-              data[i] = 255 - data[i];
-              data[i + 1] = 255 - data[i + 1];
-              data[i + 2] = 255 - data[i + 2];
-            }
-            break;
-        }
-  
-        return imageData;
-      }
-  
-      async function capturePhoto() {
-        try {
-          if (!video || video.readyState < 2) {
-            throw new Error("Video not ready");
+
+            qrCodeElement.appendChild(qrCanvas);
+            qrCodeContainer.style.display = "block";
+            qrCodeGenerated = true;
+
+            localStorage.setItem(
+              `picobooth_${uniqueId}`,
+              stripCanvas.toDataURL("image/png")
+            );
+          } catch (error) {
+            console.error("QR code generation failed:", error);
+            showPopup("Failed to generate QR code. Please try again.", 2000, false);
           }
-  
-          // Set canvas dimensions to match video resolution
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-  
-          // Draw the image with mirror effect
-          ctx.save();
-          ctx.scale(-1, 1);
-          ctx.drawImage(
-            video,
-            -video.videoWidth,
-            0,
-            video.videoWidth,
-            video.videoHeight
-          );
-          ctx.restore();
-  
-          if (selectedFilter !== "normal") {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const filteredData = applyFilter(imageData);
-            ctx.putImageData(filteredData, 0, 0);
-          }
-  
-          // Trigger flash effect
-          if (flashOverlay) {
-            flashOverlay.style.animation = "none";
-            void flashOverlay.offsetWidth; // Trigger reflow
-            flashOverlay.style.animation = "flash 0.5s ease-out";
-          }
-  
-          // Get the image data and add to photos array
-          const photoData = canvas.toDataURL("image/png");
-          photos.push(photoData);
-  
-          updatePhotoPreviews();
-        } catch (error) {
-          console.error("Capture failed:", error);
-          showPopup("Capture failed. Please try again.", 2000, false);
-          resetCapture();
         }
-      }
-  
-      function updatePhotoPreviews() {
-        photoPreviewContainer.innerHTML = "";
-  
-        if (photos.length === 0) {
-          photoPreviewContainer.innerHTML = `
-                      <div class="preview-placeholder">
-                          <i class="fas fa-camera"></i>
-                          <p>Your photos will appear here</p>
-                      </div>
-                  `;
-          return;
-        }
-  
-        photos.forEach((photo, index) => {
-          const previewDiv = document.createElement("div");
-          previewDiv.className = "photo-preview-item animate";
-          previewDiv.innerHTML = `
-                      <div class="photo-preview-number">${index + 1}</div>
-                      <img src="${photo}" class="photo-preview" alt="Photo ${
-            index + 1
-          }">
-                  `;
-          photoPreviewContainer.appendChild(previewDiv);
+
+        saveBtn.addEventListener("click", async function () {
+          if (photos.length === 0) {
+            showPopup("No photos to save!", 1500, false);
+            return;
+          }
+
+          try {
+            await generateStripPreview();
+
+            // Create a high-resolution version for printing
+            const printWidth = 1200;
+            const printRatio = printWidth / stripCanvas.width;
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = printWidth;
+            tempCanvas.height = stripCanvas.height * printRatio;
+            const tempCtx = tempCanvas.getContext("2d");
+
+            tempCtx.imageSmoothingEnabled = true;
+            tempCtx.drawImage(
+              stripCanvas,
+              0,
+              0,
+              stripCanvas.width,
+              stripCanvas.height,
+              0,
+              0,
+              tempCanvas.width,
+              tempCanvas.height
+            );
+
+            const link = document.createElement("a");
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+            link.download = `picobooth-${timestamp}.png`;
+            link.href = tempCanvas.toDataURL("image/png", 1.0);
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showPopup("Photo strip saved!", 1500, false);
+          } catch (error) {
+            console.error("Save failed:", error);
+            showPopup("Save failed. Please try again.", 2000, false);
+          }
         });
-      }
-  
-      function resetCapture() {
-        isCapturing = false;
-        captureBtn.disabled = false;
-        countdownElement.style.opacity = "0";
-        if (countdownInterval) clearInterval(countdownInterval);
-      }
-  
-      function resetSession() {
-        photos = [];
-        updatePhotoPreviews();
-        stripPreview.style.display = "none";
-        allPhotosCaptured.style.display = "none";
-        video.style.display = "block";
-        cameraFrame.style.display = "block";
-        photoPreviewSidebar.style.display = "block";
-        photoOptionsSection.style.display = "flex";
-        stickerContainers.forEach((container) => {
-          container.remove();
+
+        qrBtn.addEventListener("click", function () {
+          if (photos.length === 0) {
+            showPopup("No photos to generate QR code for!", 1500, false);
+            return;
+          }
+          generateQRCode();
         });
-        stickerContainers = [];
-        qrCodeContainer.style.display = "none";
-        qrCodeElement.innerHTML = "";
-        qrCodeGenerated = false;
-      }
-  
-      async function finishCaptureSession() {
-        isCapturing = false;
-        allPhotosText.textContent = `All ${photos.length} photos captured!`;
-        allPhotosCaptured.style.display = "block";
-  
-        try {
-          await generateStripPreview();
-          stripPreview.style.display = "block";
-          video.style.display = "none";
-          cameraFrame.style.display = "none";
-          photoPreviewSidebar.style.display = "none";
-          photoOptionsSection.style.display = "none";
-          captureBtn.disabled = false;
-  
-          filterPanel.style.display = "none";
-          customizationPanel.style.display = "grid";
-          clearStickersBtn.style.display = "block";
-          saveBtn.style.display = "block";
-          qrBtn.style.display = "block";
-        } catch (error) {
-          console.error("Preview generation failed:", error);
-          showPopup("Couldn't generate preview", 2000, false);
-        }
-      }
-  
-      async function generateStripPreview() {
-        return new Promise((resolve) => {
-          // Calculate dimensions based on device pixel ratio for high DPI displays
-          const pixelRatio = window.devicePixelRatio || 1;
-          const targetWidth = 1200 * pixelRatio; // New rectangular dimensions
-          const targetHeight = 800 * pixelRatio;
-          const spacing = 15 * pixelRatio;
-          const stripPadding = 20 * pixelRatio;
-          const borderWidth = 20 * pixelRatio; // Increased border width for better visibility
-  
-          // Calculate total strip height based on number of photos
-          const stripHeight = 
-            (targetHeight + spacing) * photos.length - 
-            spacing + 
-            stripPadding * 2 + 
-            50; // Extra space for metadata
-  
-          // Set canvas dimensions (actual pixels)
-          stripCanvas.width = targetWidth + borderWidth * 2;
-          stripCanvas.height = stripHeight + borderWidth * 2;
-  
-          // Set CSS dimensions (display size) using our variables
-          const displayWidth = isMobile 
-            ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--strip-display-mobile'))
-            : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--strip-display-width'));
-          
-          stripCanvas.style.width = `${displayWidth}px`;
-          stripCanvas.style.height = `${(stripHeight / targetWidth) * displayWidth}px`;
-  
-          stripCtx.clearRect(0, 0, stripCanvas.width, stripCanvas.height);
-  
-          // Draw the border (white background)
-          stripCtx.fillStyle = "white";
-          stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
-  
-          // Handle different background types
-          if (selectedColor.startsWith("linear-gradient")) {
-            // Improved gradient parsing and creation
-            try {
-              const gradientParams = selectedColor.match(
-                /linear-gradient\((.+)\)/
-              )[1];
-              const parts = gradientParams.split(/,(?=\s*(?:#|rgb|hsl|var))/);
-  
-              // Extract angle (default to 135deg if not specified)
-              let angle = 135;
-              const angleMatch = parts[0].match(/(\d+)deg/);
-              if (angleMatch) {
-                angle = parseInt(angleMatch[1]);
-                parts.shift(); // Remove angle from color stops
-              }
-  
-              // Create gradient coordinates based on angle
-              const angleRad = ((angle - 90) * Math.PI) / 180;
-              const length = Math.sqrt(
-                stripCanvas.width * stripCanvas.width +
-                  stripCanvas.height * stripCanvas.height
+
+        downloadQrBtn.addEventListener("click", async function () {
+          if (!qrCodeGenerated) {
+            showPopup("Please generate QR code first", 1500, false);
+            return;
+          }
+
+          try {
+            const qrCanvas = qrCodeElement.querySelector("canvas");
+            if (!qrCanvas) {
+              throw new Error("QR code canvas not found");
+            }
+
+            const dataURL = qrCanvas.toDataURL("image/png");
+            const a = document.createElement("a");
+            a.href = dataURL;
+            a.download = "picobooth-qr.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          } catch (error) {
+            console.error("QR download failed:", error);
+            showPopup("Failed to download QR code", 2000, false);
+          }
+        });
+
+        clearStickersBtn.addEventListener("click", function () {
+          stickerContainers.forEach((container) => {
+            container.remove();
+          });
+          stickerContainers = [];
+
+          if (photos.length > 0) {
+            generateStripPreview();
+          }
+        });
+
+        function initPresets() {
+          presets.forEach((preset) => {
+            preset.addEventListener("click", function () {
+              const color = this.getAttribute("data-color");
+              const stickersAttr = this.getAttribute("data-stickers");
+
+              stickerContainers.forEach((container) => {
+                container.remove();
+              });
+              stickerContainers = [];
+
+              colorOptions.forEach((c) => {
+                c.classList.remove("selected");
+              });
+              const selectedColorOption = document.querySelector(
+                `.color-option[data-color="${color}"]`
               );
-              const x1 =
-                stripCanvas.width / 2 - (Math.cos(angleRad) * length) / 2;
-              const y1 =
-                stripCanvas.height / 2 - (Math.sin(angleRad) * length) / 2;
-              const x2 =
-                stripCanvas.width / 2 + (Math.cos(angleRad) * length) / 2;
-              const y2 =
-                stripCanvas.height / 2 + (Math.sin(angleRad) * length) / 2;
-  
-              const gradient = stripCtx.createLinearGradient(x1, y1, x2, y2);
-  
-              // Add color stops with proper position calculation
-              const stopCount = parts.length;
-              parts.forEach((stop, i) => {
-                const color = stop.trim();
-                const pos = i / (stopCount - 1);
-                gradient.addColorStop(pos, color);
-              });
-  
-              stripCtx.fillStyle = gradient;
-            } catch (e) {
-              console.error("Error creating gradient:", e);
-              stripCtx.fillStyle = "#ff69b4"; // Fallback color
-            }
-          } else if (selectedColor.startsWith("url(")) {
-            // Handle pattern backgrounds
-            const patternImg = new Image();
-            patternImg.onload = () => {
-              const pattern = stripCtx.createPattern(patternImg, "repeat");
-              stripCtx.fillStyle = pattern;
-              drawStripBackground();
-            };
-            patternImg.onerror = () => {
-              console.error("Failed to load pattern image");
-              stripCtx.fillStyle = "#ff69b4"; // Fallback color
-              drawStripBackground();
-            };
-            patternImg.src = selectedColor.match(/url\(['"]?(.*?)['"]?\)/)[1];
-            return; // Early return since we'll draw when image loads
-          } else {
-            // Solid color
-            stripCtx.fillStyle = selectedColor;
-          }
-  
-          drawStripBackground();
-  
-          function drawStripBackground() {
-            // Draw the colored background with border padding
-            stripCtx.fillRect(
-              borderWidth,
-              borderWidth,
-              stripCanvas.width - borderWidth * 2,
-              stripCanvas.height - borderWidth * 2
-            );
-          }
-  
-          // Create an array of promises for loading all photos
-          const photoPromises = photos.map((photo, index) => {
-            return new Promise((resolve) => {
-              const img = new Image();
-              img.onload = () => {
-                // Center the photo horizontally with border padding
-                const x =
-                  borderWidth +
-                  (stripCanvas.width - borderWidth * 2 - targetWidth) / 2;
-  
-                // Calculate y position based on photo index with border padding
-                const y =
-                  borderWidth + stripPadding + (targetHeight + spacing) * index;
-  
-                // Draw the photo with rectangular dimensions
-                stripCtx.drawImage(
-                  img,
-                  0,
-                  0,
-                  img.width,
-                  img.height,
-                  x,
-                  y,
-                  targetWidth,
-                  targetHeight
-                );
-                resolve();
-              };
-              img.onerror = () => {
-                console.error("Failed to load photo for strip");
-                resolve();
-              };
-              img.src = photo;
-            });
-          });
-  
-          // Wait for all photos to load and draw
-          Promise.all(photoPromises).then(() => {
-            // Add stickers to the strip
-            stickerContainers.forEach((container) => {
-              const img = container.querySelector("img");
-              if (!img) return;
-  
-              const rect = container.getBoundingClientRect();
-              const previewRect = stripFrame.getBoundingClientRect();
-  
-              const x = borderWidth + (rect.left - previewRect.left) * pixelRatio;
-              const y = borderWidth + (rect.top - previewRect.top) * pixelRatio;
-              const width = parseInt(container.style.width) * pixelRatio;
-              const height = parseInt(container.style.height) * pixelRatio;
-  
-              const tempImg = new Image();
-              tempImg.onload = () => {
-                stripCtx.drawImage(tempImg, x, y, width, height);
-              };
-              tempImg.src = img.src;
-            });
-  
-            addStripMetadata();
-            resolve();
-          });
-        });
-      }
-  
-      function addStripMetadata() {
-        const now = new Date();
-        const date = now.toLocaleDateString();
-        const time = now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-  
-        stripCtx.fillStyle = "#000";
-        stripCtx.font = `${
-          18 * (window.devicePixelRatio || 1)
-        }px 'Montserrat', sans-serif`;
-        stripCtx.textAlign = "center";
-  
-        const text = `${date} ${time} - PicoBooth`;
-        const textX = stripCanvas.width / 2;
-  
-        stripCtx.shadowColor = "rgba(255,255,255,0.7)";
-        stripCtx.shadowBlur = 5 * (window.devicePixelRatio || 1);
-        stripCtx.shadowOffsetX = 1 * (window.devicePixelRatio || 1);
-        stripCtx.shadowOffsetY = 1 * (window.devicePixelRatio || 1);
-  
-        stripCtx.fillText(
-          text,
-          textX,
-          stripCanvas.height - 20 * (window.devicePixelRatio || 1)
-        );
-  
-        stripCtx.shadowColor = "transparent";
-      }
-  
-      function generateQRCode() {
-        if (qrCodeGenerated) {
-          qrCodeContainer.style.display =
-            qrCodeContainer.style.display === "block" ? "none" : "block";
-          return;
-        }
-  
-        try {
-          // Instead of using the full image data (which is too large for QR codes),
-          // we'll generate a unique URL that can be used to retrieve the image
-          const uniqueId =
-            Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-          const qrData = `${window.location.origin}${window.location.pathname}?strip=${uniqueId}`;
-  
-          // Clear any existing QR code
-          qrCodeElement.innerHTML = "";
-  
-          // Generate QR code with error correction
-          const qr = qrcode(0, "H");
-          qr.addData(qrData);
-          qr.make();
-  
-          // Create canvas for QR code
-          const qrSize = 150;
-          const qrCanvas = document.createElement("canvas");
-          qrCanvas.width = qrSize;
-          qrCanvas.height = qrSize;
-          const qrCtx = qrCanvas.getContext("2d");
-  
-          // Calculate module size
-          const moduleCount = qr.getModuleCount();
-          const moduleSize = qrSize / moduleCount;
-  
-          // Draw white background
-          qrCtx.fillStyle = "#ffffff";
-          qrCtx.fillRect(0, 0, qrSize, qrSize);
-  
-          // Draw QR code modules
-          qrCtx.fillStyle = "#000000";
-          for (let row = 0; row < moduleCount; row++) {
-            for (let col = 0; col < moduleCount; col++) {
-              if (qr.isDark(row, col)) {
-                qrCtx.fillRect(
-                  col * moduleSize,
-                  row * moduleSize,
-                  moduleSize,
-                  moduleSize
-                );
+              if (selectedColorOption) {
+                selectedColorOption.classList.add("selected");
               }
-            }
-          }
-  
-          // Add QR canvas to the container
-          qrCodeElement.appendChild(qrCanvas);
-          qrCodeContainer.style.display = "block";
-          qrCodeGenerated = true;
-  
-          // Store the strip data in localStorage with the unique ID
-          localStorage.setItem(
-            `picobooth_${uniqueId}`,
-            stripCanvas.toDataURL("image/png")
-          );
-        } catch (error) {
-          console.error("QR code generation failed:", error);
-          showPopup("Failed to generate QR code. Please try again.", 2000, false);
-        }
-      }
-  
-      saveBtn.addEventListener("click", async function () {
-        if (photos.length === 0) {
-          showPopup("No photos to save!", 1500, false);
-          return;
-        }
-  
-        try {
-          await generateStripPreview();
-  
-          // Create a high-resolution version for printing
-          const printWidth = 1200; // Higher resolution for printing
-          const printRatio = printWidth / stripCanvas.width;
-          const tempCanvas = document.createElement("canvas");
-          tempCanvas.width = printWidth;
-          tempCanvas.height = stripCanvas.height * printRatio;
-          const tempCtx = tempCanvas.getContext("2d");
-  
-          // Scale up the strip for better print quality
-          tempCtx.imageSmoothingEnabled = true;
-          tempCtx.drawImage(
-            stripCanvas,
-            0,
-            0,
-            stripCanvas.width,
-            stripCanvas.height,
-            0,
-            0,
-            tempCanvas.width,
-            tempCanvas.height
-          );
-  
-          const link = document.createElement("a");
-          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-          link.download = `picobooth-${timestamp}.png`;
-          link.href = tempCanvas.toDataURL("image/png", 1.0);
-  
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-  
-          showPopup("Photo strip saved!", 1500, false);
-        } catch (error) {
-          console.error("Save failed:", error);
-          showPopup("Save failed. Please try again.", 2000, false);
-        }
-      });
-  
-      qrBtn.addEventListener("click", function () {
-        if (photos.length === 0) {
-          showPopup("No photos to generate QR code for!", 1500, false);
-          return;
-        }
-        generateQRCode();
-      });
-  
-      downloadQrBtn.addEventListener("click", async function () {
-        if (!qrCodeGenerated) {
-          showPopup("Please generate QR code first", 1500, false);
-          return;
-        }
-  
-        try {
-          // Get the QR code canvas
-          const qrCanvas = qrCodeElement.querySelector("canvas");
-          if (!qrCanvas) {
-            throw new Error("QR code canvas not found");
-          }
-  
-          // Create download link
-          const dataURL = qrCanvas.toDataURL("image/png");
-          const a = document.createElement("a");
-          a.href = dataURL;
-          a.download = "picobooth-qr.png";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } catch (error) {
-          console.error("QR download failed:", error);
-          showPopup("Failed to download QR code", 2000, false);
-        }
-      });
-  
-      clearStickersBtn.addEventListener("click", function () {
-        stickerContainers.forEach((container) => {
-          container.remove();
-        });
-        stickerContainers = [];
-  
-        if (photos.length > 0) {
-          generateStripPreview();
-        }
-      });
-  
-      function initPresets() {
-        presets.forEach((preset) => {
-          preset.addEventListener("click", function () {
-            const color = this.getAttribute("data-color");
-            const stickersAttr = this.getAttribute("data-stickers");
-  
-            // Clear existing stickers safely
-            stickerContainers.forEach((container) => {
-              container.remove();
-            });
-            stickerContainers = [];
-  
-            // Update color selection safely
-            colorOptions.forEach((c) => {
-              c.classList.remove("selected");
-            });
-            const selectedColorOption = document.querySelector(
-              `.color-option[data-color="${color}"]`
-            );
-            if (selectedColorOption) {
-              selectedColorOption.classList.add("selected");
-            }
-  
-            selectedColor = color;
-  
-            // Add new stickers with error handling
-            try {
-              const stickerFiles = stickersAttr
-                .split(",")
-                .filter((file) => file.trim());
-  
-              stickerFiles.forEach((file) => {
-                const stickerSrc = `{{ url_for('static', filename='') }}${file.trim()}`;
-  
-                // Define positions with fallbacks
-                const positions = [
-                  [50, 50],
-                  [stripCanvas.width - 50, 50],
-                  [50, stripCanvas.height - 50],
-                  [stripCanvas.width - 50, stripCanvas.height - 50],
-                ];
-  
-                positions.forEach((pos) => {
-                  createStickerContainer(stickerSrc, pos[0], pos[1], 60, 60);
+
+              selectedColor = color;
+
+              try {
+                const stickerFiles = stickersAttr
+                  .split(",")
+                  .filter((file) => file.trim());
+
+                stickerFiles.forEach((file) => {
+                  const stickerSrc = `{{ url_for('static', filename='') }}${file.trim()}`;
+
+                  const positions = [
+                    [50, 50],
+                    [stripCanvas.width - 50, 50],
+                    [50, stripCanvas.height - 50],
+                    [stripCanvas.width - 50, stripCanvas.height - 50],
+                  ];
+
+                  positions.forEach((pos) => {
+                    createStickerContainer(stickerSrc, pos[0], pos[1], 60, 60);
+                  });
                 });
-              });
-  
-              if (photos.length > 0) {
-                generateStripPreview().catch((e) =>
-                  console.error("Preview error:", e)
-                );
+
+                if (photos.length > 0) {
+                  generateStripPreview().catch((e) =>
+                    console.error("Preview error:", e)
+                  );
+                }
+
+                const presetName =
+                  this.querySelector("span").textContent || "theme";
+                showPopup(`Applied ${presetName}!`, 1500, false);
+              } catch (error) {
+                console.error("Error applying preset:", error);
+                showPopup("Couldn't apply preset", 1500, false);
               }
-  
-              const presetName =
-                this.querySelector("span").textContent || "theme";
-              showPopup(`Applied ${presetName}!`, 1500, false);
-            } catch (error) {
-              console.error("Error applying preset:", error);
-              showPopup("Couldn't apply preset", 1500, false);
+            });
+          });
+        }
+
+        // Initialize all components
+        function initializeAll() {
+          initCamera();
+          initDropdown();
+          initFilterOptions();
+          initColorOptions();
+          initStickers();
+          initPresets();
+          initFileUpload();
+
+          // Add click handler to video element to help with mobile camera activation
+          video.addEventListener("click", function () {
+            if (!video.srcObject) {
+              initCamera();
             }
           });
+        }
+
+        // Start initialization
+        if (document.readyState === "complete") {
+          initializeAll();
+        } else {
+          window.addEventListener("load", initializeAll);
+        }
+
+        // Clean up on page unload
+        window.addEventListener("beforeunload", function () {
+          if (cameraStream) {
+            cameraStream.getTracks().forEach((track) => track.stop());
+          }
         });
-      }
-  
-      // Initialize all components
-      function initializeAll() {
-        initCamera();
-        initDropdown();
-        initFilterOptions();
-        initColorOptions();
-        initStickers();
-        initPresets();
-        initFileUpload(); // Initialize file upload functionality
-  
-        // Add click handler to video element to help with mobile camera activation
-        video.addEventListener("click", function () {
-          if (!video.srcObject) {
+
+        // Handle page visibility changes
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden && !video.srcObject) {
             initCamera();
           }
         });
-      }
-  
-      // Start initialization
-      if (document.readyState === "complete") {
-        initializeAll();
-      } else {
-        window.addEventListener("load", initializeAll);
-      }
-  
-      // Clean up on page unload
-      window.addEventListener("beforeunload", function () {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach((track) => track.stop());
-        }
+
+        // Add touch support for mobile devices
+        document.addEventListener(
+          "touchend",
+          function (e) {
+            if (e.target === video && !video.srcObject) {
+              initCamera();
+            }
+          },
+          { passive: true }
+        );
       });
-  
-      // Handle page visibility changes
-      document.addEventListener("visibilitychange", function () {
-        if (!document.hidden && !video.srcObject) {
-          initCamera();
-        }
-      });
-  
-      // Add touch support for mobile devices
-      document.addEventListener(
-        "touchend",
-        function (e) {
-          if (e.target === video && !video.srcObject) {
-            initCamera();
-          }
-        },
-        { passive: true }
-      );
-    });
-  </script>
-  
-  {% endblock %}
+    </script>
+    
+    {% endblock %}
