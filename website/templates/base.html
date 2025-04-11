@@ -400,6 +400,7 @@
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0;
             transform: translateY(20px);
+            pointer-events: auto;
         }
 
         .social-icons a.visible {
@@ -628,7 +629,8 @@
         const iconObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // Make icon visible
+                    // Make icon immediately clickable
+                    entry.target.style.pointerEvents = 'auto';
                     entry.target.classList.add('visible');
                     
                     // Add bounce animation with delay based on index
@@ -644,6 +646,7 @@
                 } else {
                     // Reset when leaving viewport
                     entry.target.classList.remove('visible', 'animate');
+                    entry.target.style.pointerEvents = 'none';
                 }
             });
         }, {
@@ -653,6 +656,8 @@
 
         // Start observing each icon
         socialIcons.forEach(icon => {
+            // Make sure icons are clickable even before animation
+            icon.style.pointerEvents = 'auto';
             iconObserver.observe(icon);
         });
 
@@ -665,6 +670,11 @@
             polaroid.addEventListener('mouseleave', function() {
                 this.style.transform = 'rotate(5deg)';
             });
+        });
+
+        // Ensure social icons are always clickable
+        document.querySelectorAll('.social-icons a').forEach(icon => {
+            icon.style.pointerEvents = 'auto';
         });
     </script>
 </body>

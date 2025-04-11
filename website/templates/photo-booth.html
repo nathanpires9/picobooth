@@ -1644,7 +1644,6 @@ draggable="true"
     }
   </style>
 
-
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // DOM Elements
@@ -2501,7 +2500,37 @@ draggable="true"
         stripCtx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
 
         // Handle different background types
-        if (selectedColor.startsWith("linear-gradient")) {
+        if (selectedColor.startsWith("url(")) {
+          const patternImg = new Image();
+          patternImg.crossOrigin = "Anonymous";
+          patternImg.onload = () => {
+            // First draw the background pattern
+            const pattern = stripCtx.createPattern(patternImg, "repeat");
+            stripCtx.fillStyle = pattern;
+            stripCtx.fillRect(
+              borderWidth,
+              borderWidth,
+              stripCanvas.width - borderWidth * 2,
+              stripCanvas.height - borderWidth * 2
+            );
+            
+            // Then draw the photos on top
+            drawPhotosAndStickers();
+          };
+          patternImg.onerror = () => {
+            console.error("Failed to load pattern image");
+            // Fallback to pink color if pattern fails to load
+            stripCtx.fillStyle = "#ff69b4";
+            stripCtx.fillRect(
+              borderWidth,
+              borderWidth,
+              stripCanvas.width - borderWidth * 2,
+              stripCanvas.height - borderWidth * 2
+            );
+            drawPhotosAndStickers();
+          };
+          patternImg.src = selectedColor.match(/url\(['"]?(.*?)['"]?\)/)[1];
+        } else if (selectedColor.startsWith("linear-gradient")) {
           try {
             const gradientParams = selectedColor.match(
               /linear-gradient\((.+)\)/
@@ -2538,101 +2567,99 @@ draggable="true"
             });
 
             stripCtx.fillStyle = gradient;
+            stripCtx.fillRect(
+              borderWidth,
+              borderWidth,
+              stripCanvas.width - borderWidth * 2,
+              stripCanvas.height - borderWidth * 2
+            );
+            drawPhotosAndStickers();
           } catch (e) {
             console.error("Error creating gradient:", e);
             stripCtx.fillStyle = "#ff69b4";
+            stripCtx.fillRect(
+              borderWidth,
+              borderWidth,
+              stripCanvas.width - borderWidth * 2,
+              stripCanvas.height - borderWidth * 2
+            );
+            drawPhotosAndStickers();
           }
-        } else if (selectedColor.startsWith("url(")) {
-          const patternImg = new Image();
-          patternImg.onload = () => {
-            const pattern = stripCtx.createPattern(patternImg, "repeat");
-            stripCtx.fillStyle = pattern;
-            drawStripBackground();
-          };
-          patternImg.onerror = () => {
-            console.error("Failed to load pattern image");
-            stripCtx.fillStyle = "#ff69b4";
-            drawStripBackground();
-          };
-          patternImg.src = selectedColor.match(/url\(['"]?(.*?)['"]?\)/)[1];
-          return;
         } else {
+          // Solid color
           stripCtx.fillStyle = selectedColor;
-        }
-
-        drawStripBackground();
-
-        function drawStripBackground() {
-          // Draw the colored background with border padding
           stripCtx.fillRect(
             borderWidth,
             borderWidth,
             stripCanvas.width - borderWidth * 2,
             stripCanvas.height - borderWidth * 2
           );
+          drawPhotosAndStickers();
         }
 
-        // Create an array of promises for loading all photos
-        const photoPromises = photos.map((photo, index) => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-              // Center the photo horizontally with border padding and side margin
-              const x =
-                borderWidth + sideMargin +
-                (stripCanvas.width - borderWidth * 2 - sideMargin * 2 - targetWidth) / 2;
+        function drawPhotosAndStickers() {
+          // Create an array of promises for loading all photos
+          const photoPromises = photos.map((photo, index) => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => {
+                // Center the photo horizontally with border padding and side margin
+                const x =
+                  borderWidth + sideMargin +
+                  (stripCanvas.width - borderWidth * 2 - sideMargin * 2 - targetWidth) / 2;
 
-              // Calculate y position based on photo index with border padding
-              const y =
-                borderWidth + stripPadding + (targetHeight + spacing) * index;
+                // Calculate y position based on photo index with border padding
+                const y =
+                  borderWidth + stripPadding + (targetHeight + spacing) * index;
 
-              // Draw the photo with rectangular dimensions
-              stripCtx.drawImage(
-                img,
-                0,
-                0,
-                img.width,
-                img.height,
-                x,
-                y,
-                targetWidth,
-                targetHeight
-              );
-              resolve();
-            };
-            img.onerror = () => {
-              console.error("Failed to load photo for strip");
-              resolve();
-            };
-            img.src = photo;
-          });
-        });
-
-        // Wait for all photos to load and draw
-        Promise.all(photoPromises).then(() => {
-          // Add stickers to the strip
-          stickerContainers.forEach((container) => {
-            const img = container.querySelector("img");
-            if (!img) return;
-
-            const rect = container.getBoundingClientRect();
-            const previewRect = stripFrame.getBoundingClientRect();
-
-            const x = borderWidth + sideMargin + (rect.left - previewRect.left) * pixelRatio;
-            const y = borderWidth + (rect.top - previewRect.top) * pixelRatio;
-            const width = parseInt(container.style.width) * pixelRatio;
-            const height = parseInt(container.style.height) * pixelRatio;
-
-            const tempImg = new Image();
-            tempImg.onload = () => {
-              stripCtx.drawImage(tempImg, x, y, width, height);
-            };
-            tempImg.src = img.src;
+                // Draw the photo with rectangular dimensions
+                stripCtx.drawImage(
+                  img,
+                  0,
+                  0,
+                  img.width,
+                  img.height,
+                  x,
+                  y,
+                  targetWidth,
+                  targetHeight
+                );
+                resolve();
+              };
+              img.onerror = () => {
+                console.error("Failed to load photo for strip");
+                resolve();
+              };
+              img.src = photo;
+            });
           });
 
-          addStripMetadata();
-          resolve();
-        });
+          // Wait for all photos to load and draw
+          Promise.all(photoPromises).then(() => {
+            // Add stickers to the strip
+            stickerContainers.forEach((container) => {
+              const img = container.querySelector("img");
+              if (!img) return;
+
+              const rect = container.getBoundingClientRect();
+              const previewRect = stripFrame.getBoundingClientRect();
+
+              const x = borderWidth + sideMargin + (rect.left - previewRect.left) * pixelRatio;
+              const y = borderWidth + (rect.top - previewRect.top) * pixelRatio;
+              const width = parseInt(container.style.width) * pixelRatio;
+              const height = parseInt(container.style.height) * pixelRatio;
+
+              const tempImg = new Image();
+              tempImg.onload = () => {
+                stripCtx.drawImage(tempImg, x, y, width, height);
+              };
+              tempImg.src = img.src;
+            });
+
+            addStripMetadata();
+            resolve();
+          });
+        }
       });
     }
 
@@ -2663,6 +2690,7 @@ draggable="true"
       // Reset shadow
       stripCtx.shadowColor = "transparent";
     }
+
     function generateQRCode() {
       if (qrCodeGenerated) {
         qrCodeContainer.style.display =
