@@ -93,11 +93,11 @@
 
     h1 {
         font-family: 'Chewy', cursive;
-        color: #FF6B9D;
+        color: var(--pink);
         text-align: center;
         margin-bottom: 2.5rem;
         font-size: 2.8rem;
-        text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+        text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
     }
 
     /* Accordion Styles */
@@ -121,7 +121,7 @@
     .accordion-btn {
         width: 100%;
         padding: 1.2rem 1.5rem;
-        background: linear-gradient(135deg, #FF9BB4 0%, #FF6B9D 100%);
+        background: linear-gradient(135deg, var(--pink-light) 0%, var(--pink) 100%);
         border: none;
         color: white;
         font-size: 1.2rem;
@@ -135,7 +135,7 @@
     }
 
     .accordion-btn:hover {
-        background: linear-gradient(135deg, #FF6B9D 0%, #FF3D7F 100%);
+        background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
     }
 
     .icon {
@@ -163,8 +163,8 @@
 
     /* Content Styles */
     .tip-box {
-        background: #FFF5F7;
-        border-left: 4px solid #FF6B9D;
+        background: var(--pink-lighter);
+        border-left: 4px solid var(--pink);
         padding: 0.8rem;
         margin-top: 1rem;
         border-radius: 0 8px 8px 0;
@@ -178,7 +178,7 @@
     }
 
     .feature-card {
-        background: #FFF5F7;
+        background: var(--pink-lighter);
         padding: 1rem;
         border-radius: 12px;
         text-align: center;
@@ -207,7 +207,7 @@
     }
 
     .home-btn {
-        background: #FF6B9D;
+        background: var(--pink);
         border: none;
         padding: 0.8rem 2rem;
         font-size: 1.2rem;
@@ -223,15 +223,31 @@
 
     /* Links */
     a {
-        color: #FF6B9D;
+        color: var(--pink);
         font-weight: bold;
         text-decoration: none;
         transition: all 0.2s ease;
     }
 
     a:hover {
-        color: #FF3D7F;
+        color: var(--pink-dark);
         text-decoration: underline;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2.2rem;
+        }
+        
+        .accordion-btn {
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .features-grid {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 </style>
 
