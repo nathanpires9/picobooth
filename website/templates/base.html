@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="PicoBooth - Fun DIY photo booth for your events">
+    <meta name="description" content="Make events unforgettable with PicoBooth’s DIY photo booth for weddings, parties & corporate functions. Customize props & get instant prints or downloads.">
+
     
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon.png') }}">
     <title>PicoBooth</title>
@@ -385,6 +386,8 @@
             display: flex;
             justify-content: center;
             margin-top: 20px;
+            position: relative;
+            z-index: 10;
         }
 
         .social-icons a {
@@ -397,41 +400,28 @@
             align-items: center;
             justify-content: center;
             margin: 0 10px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: auto;
-        }
-
-        .social-icons a.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .social-icons a.animate {
-            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes bounceIn {
-            0% {
-                transform: translateY(0) scale(0.8);
-                opacity: 0;
-            }
-            50% {
-                transform: translateY(-10px) scale(1.1);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+            transform: translateY(0) !important;
         }
 
         .social-icons a:hover {
             background: white;
             color: var(--pink);
-            transform: translateY(-5px) scale(1.1) !important;
+            transform: translateY(-3px) scale(1.1) !important;
         }
+
+        /* Simple bounce animation */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .social-icons a:nth-child(1) { animation: bounce 2s infinite 0.1s; }
+        .social-icons a:nth-child(2) { animation: bounce 2s infinite 0.2s; }
+        .social-icons a:nth-child(3) { animation: bounce 2s infinite 0.3s; }
 
         /* Smooth Scroll Effect */
         html {
@@ -448,17 +438,6 @@
 
         .nav-item.active a {
             animation: pulse 1.5s infinite;
-        }
-
-        /* Bounce animation for call-to-action elements */
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-20px);}
-            60% {transform: translateY(-10px);}
-        }
-
-        .bounce {
-            animation: bounce 2s infinite;
         }
 
         /* Responsive adjustments */
@@ -508,9 +487,9 @@
 
     <footer class="footer">
         <div class="social-icons">
-            <a href="https://instagram.com/eedtart"><i class="fab fa-instagram"></i></a>
-            <a href="https://ko-fi.com/eedtart"><i class="fa fa-coffee"></i></a>
-            <a href="https://github.com/nathanpires9"><i class="fab fa-github"></i></a>
+            <a href="https://instagram.com/eedtart" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://github.com/nathanpires9" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="https://ko-fi.com/eedtart" target="_blank"><i class="fa fa-coffee"></i></a>
         </div>
         <p>© 2025 PicoBooth. All rights reserved. | DIY Photo Booth Fun!</p>
     </footer>
@@ -620,60 +599,17 @@
                 $('.navbar-toggler').addClass('collapsed');
                 $('.navbar-toggler-icon').css('transform', 'rotate(90deg)');
             });
-        });
 
-        // Social icons animation with Intersection Observer
-        const socialIcons = document.querySelectorAll('.social-icons a');
-        
-        const iconObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Make icon immediately clickable
-                    entry.target.style.pointerEvents = 'auto';
-                    entry.target.classList.add('visible');
-                    
-                    // Add bounce animation with delay based on index
-                    const index = Array.from(socialIcons).indexOf(entry.target);
-                    setTimeout(() => {
-                        entry.target.classList.add('animate');
-                        
-                        // Remove animation class after it completes
-                        setTimeout(() => {
-                            entry.target.classList.remove('animate');
-                        }, 600);
-                    }, index * 100);
-                } else {
-                    // Reset when leaving viewport
-                    entry.target.classList.remove('visible', 'animate');
-                    entry.target.style.pointerEvents = 'none';
-                }
+            // Add polaroid effect to images with 'polaroid' class
+            document.querySelectorAll('.polaroid').forEach(polaroid => {
+                polaroid.addEventListener('mouseenter', function() {
+                    this.style.transform = 'rotate(0deg) scale(1.05)';
+                });
+                
+                polaroid.addEventListener('mouseleave', function() {
+                    this.style.transform = 'rotate(5deg)';
+                });
             });
-        }, {
-            threshold: 0.5,
-            rootMargin: '0px 0px -50px 0px'
-        });
-
-        // Start observing each icon
-        socialIcons.forEach(icon => {
-            // Make sure icons are clickable even before animation
-            icon.style.pointerEvents = 'auto';
-            iconObserver.observe(icon);
-        });
-
-        // Add polaroid effect to images with 'polaroid' class
-        document.querySelectorAll('.polaroid').forEach(polaroid => {
-            polaroid.addEventListener('mouseenter', function() {
-                this.style.transform = 'rotate(0deg) scale(1.05)';
-            });
-            
-            polaroid.addEventListener('mouseleave', function() {
-                this.style.transform = 'rotate(5deg)';
-            });
-        });
-
-        // Ensure social icons are always clickable
-        document.querySelectorAll('.social-icons a').forEach(icon => {
-            icon.style.pointerEvents = 'auto';
         });
     </script>
 </body>
