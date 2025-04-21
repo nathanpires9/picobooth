@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template,request, jsonify, send_file
+from flask import Blueprint, render_template,request, jsonify, send_file, send_from_directory, current_app
 
 views = Blueprint('views', __name__)
 
@@ -22,6 +22,9 @@ def support():
 def requests():
     return render_template("requests.html")
 
+@views.route('/favicon.ico')
+def favicon():
+    return send_from_directory(current_app.static_folder, 'logo.png')
 
 @views.route('/generate-qr', methods=['POST'])
 def generate_qr():
